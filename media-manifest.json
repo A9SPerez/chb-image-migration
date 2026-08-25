@@ -1,0 +1,422 @@
+[
+  {
+    "productName": "Neon Rosa Set",
+    "handle": "neon-rosa-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Photo%20Dec%2018%202024%2C%204%2015%2036%20PM.jpg"
+  },
+  {
+    "productName": "Copper Set",
+    "handle": "copper-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Photo%20Dec%2018%202024%2C%204%2014%2039%20PM.jpg"
+  },
+  {
+    "productName": "Marine Set",
+    "handle": "marine-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Photo%20Dec%2017%202024%2C%209%2006%2003%20PM.jpg"
+  },
+  {
+    "productName": "Skyfall Set",
+    "handle": "skyfall-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Photo%20Dec%2017%202024%2C%209%2009%2004%20PM.jpg"
+  },
+  {
+    "productName": "Rose Quartz Set",
+    "handle": "rose-quartz-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Photo%20Dec%2017%202024%2C%209%2016%2014%20PM.jpg"
+  },
+  {
+    "productName": "Emerald Set",
+    "handle": "emerald-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Photo%20Dec%2017%202024%2C%208%2029%2010%20PM.jpg"
+  },
+  {
+    "productName": "Hearts On Fire Set",
+    "handle": "heart-on-fire-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Photo%20Dec%2017%202024%2C%208%2038%2031%20PM.jpg"
+  },
+  {
+    "productName": "CHB Wine Cup",
+    "handle": "chb-wine-cup",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_4270.jpeg"
+  },
+  {
+    "productName": "Glow Butter",
+    "handle": "glow-butter",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/90de1470-f11a-4bef-971f-56b10af21b91.jpg"
+  },
+  {
+    "productName": "Lime Set",
+    "handle": "lime-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Photo%20Dec%2018%202024%2C%204%2036%2025%20PM.jpg"
+  },
+  {
+    "productName": "ROYAL",
+    "handle": "royal-pre-order",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/D0d747fQ.jpeg"
+  },
+  {
+    "productName": "VERMELHO",
+    "handle": "vermelho",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/thumbnail_IMG_1464.jpg"
+  },
+  {
+    "productName": "BLANCO",
+    "handle": "blanco-pre-order",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/PlAPF_lg.jpeg"
+  },
+  {
+    "productName": "CHB Body Shimmer",
+    "handle": "chb-body-shimmer",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/3.png"
+  },
+  {
+    "productName": "CHB Glow Getter",
+    "handle": "glow-getter-tanning-oil",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_5179.jpg"
+  },
+  {
+    "productName": "UVA",
+    "handle": "uva-pre-order",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IALRYohw.jpeg"
+  },
+  {
+    "productName": "AMARELO",
+    "handle": "amarelo",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/blob-c9c572b.png"
+  },
+  {
+    "productName": "PRETO",
+    "handle": "preto",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/blob-4d9a20e.png"
+  },
+  {
+    "productName": "SUNSET",
+    "handle": "sunset-pre-order-d0dab1",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/oHnsUhZw.jpeg"
+  },
+  {
+    "productName": "AQUA",
+    "handle": "aqua",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/FFGYpGAQ.jpeg"
+  },
+  {
+    "productName": "AZUL",
+    "handle": "azul",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/blob-82d3acb.png"
+  },
+  {
+    "productName": "ROSA",
+    "handle": "rosa",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/WhatsApp%20Image%202026-06-01%20at%2012.10.52%20PM.jpeg"
+  },
+  {
+    "productName": "PRINCESA",
+    "handle": "princesa-pre-order-d26d6a",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/6KPpYZtg.jpeg"
+  },
+  {
+    "productName": "Luxury CHB Towel",
+    "handle": "luxury-chb-towel",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Facetune_14-06-2025-09-27-01.jpeg"
+  },
+  {
+    "productName": "Rosa Neon Delta Set",
+    "handle": "rosa-neon-delta-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_4335.jpeg"
+  },
+  {
+    "productName": "Sienna Delta Set",
+    "handle": "sienna-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_4407.jpeg"
+  },
+  {
+    "productName": "Espresso Delta Set",
+    "handle": "espresso-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_4412.jpeg"
+  },
+  {
+    "productName": "Vino Delta Set",
+    "handle": "vino-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_4302.jpeg"
+  },
+  {
+    "productName": "Vermelho Delta Set",
+    "handle": "vermelho-delta-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_4310.jpeg"
+  },
+  {
+    "productName": "Preto Delta Collection",
+    "handle": "preto-delta-collection",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_4431.jpeg"
+  },
+  {
+    "productName": "Azul Delta Set",
+    "handle": "azul-delta-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/blob-87aba66.png"
+  },
+  {
+    "productName": "Casa Vino Set",
+    "handle": "casa-vino-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_4478.jpeg"
+  },
+  {
+    "productName": "Casa Espresso Set",
+    "handle": "casa-espresso-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_4484.jpeg"
+  },
+  {
+    "productName": "Casa Sienna Set",
+    "handle": "casa-sienna-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_4491.jpeg"
+  },
+  {
+    "productName": "Playa Set",
+    "handle": "playa-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/blob-0c9446e.png"
+  },
+  {
+    "productName": "Coralia Set",
+    "handle": "coralia-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/blob-fa47d40.png"
+  },
+  {
+    "productName": "PRE-ORDER Oceanos Set",
+    "handle": "pre-order-oceanos-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_4497.jpeg"
+  },
+  {
+    "productName": "Essence of Julia",
+    "handle": "essence-of-julia",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/download3.jpeg"
+  },
+  {
+    "productName": "Sleepy Serenade",
+    "handle": "sleepy-serenade",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/WhatsApp%20Image%202025-07-03%20at%205.38.18%20PM.jpeg"
+  },
+  {
+    "productName": "Alara Set",
+    "handle": "alara-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/WhatsApp%20Image%202025-09-04%20at%203.54.22%20PM%20(1).jpeg"
+  },
+  {
+    "productName": "Amarelo ButterFeeling™ CHB Pants",
+    "handle": "xn-amarelo-butterfeeling-chb-pants-ti2t",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-09-30%20143911.png"
+  },
+  {
+    "productName": "Preto ButterFeeling™ CHB Pants",
+    "handle": "xn-preto-butterfeeling-chb-pants-ev8r",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-09-30%20144312.png"
+  },
+  {
+    "productName": "Bloom ButterFeeling™ CHB Pants",
+    "handle": "xn-bloom-butterfeeling-chb-pants-ev8r",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-09-30%20144351.png"
+  },
+  {
+    "productName": "Nua ButterFeeling™ CHB Pants",
+    "handle": "xn-nua-butterfeeling-chb-pants-y74q",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-09-30%20144018.png"
+  },
+  {
+    "productName": "Bloom Set",
+    "handle": "bloom-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-09-30%20150951.png"
+  },
+  {
+    "productName": "Preto Bronzeada One-Piece",
+    "handle": "preto-bronzeada-one-piece",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/1%20A.jpg"
+  },
+  {
+    "productName": "Amarelo Bronzeada One-Piece",
+    "handle": "amarelo-bronzeada-one-piece",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-10-23%20211616.jpg"
+  },
+  {
+    "productName": "Rosa Bronzeada One-Piece",
+    "handle": "rosa-bronzeada-one-piece",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-10-23%20213231.jpg"
+  },
+  {
+    "productName": "Blanco Bronzeada One-Piece",
+    "handle": "blanco-bronzeada-one-piece",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-10-23%20214102.jpg"
+  },
+  {
+    "productName": "Signature CHB Sarong",
+    "handle": "signature-chb-sarong",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-10-23%20220148.jpg"
+  },
+  {
+    "productName": "Oncinha Set",
+    "handle": "oncinha-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-10-23%20215317.jpg"
+  },
+  {
+    "productName": "Lily Knot Set",
+    "handle": "lily-knot-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-10-24%20092655.jpg"
+  },
+  {
+    "productName": "Verde Beach Knot Set",
+    "handle": "verde-beach-knot-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-10-24%20092558.jpg"
+  },
+  {
+    "productName": "Sunset Knot Set",
+    "handle": "sunset-knot-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-10-24%20093303.jpg"
+  },
+  {
+    "productName": "Casa Babaloo Set",
+    "handle": "casa-babaloo-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-11-21%20062928.jpg"
+  },
+  {
+    "productName": "Casa Solare Set",
+    "handle": "casa-solare-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-11-21%20063331.jpg"
+  },
+  {
+    "productName": "BLUEBELL",
+    "handle": "casa-bluebell-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-11-21%20063403.jpg"
+  },
+  {
+    "productName": "Casa Brasileira Set",
+    "handle": "casa-brasileira-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-11-21%20063948.jpg"
+  },
+  {
+    "productName": "Casa Leon Set",
+    "handle": "casa-leon-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-11-21%20064634.jpg"
+  },
+  {
+    "productName": "Casa Sirena Set",
+    "handle": "casa-sirena-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-11-21%20063916.jpg"
+  },
+  {
+    "productName": "Casa Noir Set",
+    "handle": "casa-noir-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_6028.jpeg"
+  },
+  {
+    "productName": "Casa Halo Set",
+    "handle": "casa-halo-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Facetune_16-12-2025-10-39-37.jpeg"
+  },
+  {
+    "productName": "Lunar ButterFeeling™ CHB Pants",
+    "handle": "xn-lunar-butterfeeling-chb-pants-ev8r",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/WhatsApp%20Image%202026-01-22%20at%2010.42.05%20AM%20(1).jpeg"
+  },
+  {
+    "productName": "Royal ButterFeeling™ CHB Pants",
+    "handle": "xn-royal-butterfeeling-chb-pants-ev8r",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/WhatsApp%20Image%202026-01-22%20at%2010.48.07%20AM.jpeg"
+  },
+  {
+    "productName": "BERRY",
+    "handle": "lover-berry-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/7F5D96D2-CD06-4DD1-9B14-163C8B530914.jpeg"
+  },
+  {
+    "productName": "Nua Set",
+    "handle": "nua-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/C4FB62DD-073B-4248-9F80-0C6B817843E0.jpeg"
+  },
+  {
+    "productName": "Yellow Core",
+    "handle": "yellow-core",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_9017.jpeg"
+  },
+  {
+    "productName": "Bronzeada Signature Hat",
+    "handle": "bronzeada-signature-hat",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/9471ADA2-8A5B-4998-9391-D653743CB787.png"
+  },
+  {
+    "productName": "Bandeira Set",
+    "handle": "bandeira-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_2783.jpeg"
+  },
+  {
+    "productName": "Casa Brasil Set",
+    "handle": "pre-order-casa-brazil-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_2779.jpeg"
+  },
+  {
+    "productName": "Finale Verde Set",
+    "handle": "pre-order-finale-verde-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_2766.jpeg"
+  },
+  {
+    "productName": "One Nation Set",
+    "handle": "one-nation-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_8726.jpeg"
+  },
+  {
+    "productName": "Peacock Set",
+    "handle": "peacock-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_8719.jpeg"
+  },
+  {
+    "productName": "Solia Set",
+    "handle": "solia-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_8716.jpeg"
+  },
+  {
+    "productName": "Sapphire Set",
+    "handle": "sapphire-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_8711.jpeg"
+  },
+  {
+    "productName": "Acai Martini Set",
+    "handle": "acai-martini-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_8708.jpeg"
+  },
+  {
+    "productName": "Mavie Set",
+    "handle": "mavie-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_8689.jpeg"
+  },
+  {
+    "productName": "PRE-ORDER Gatubela Set",
+    "handle": "pre-order-gatubela-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_8724.jpeg"
+  },
+  {
+    "productName": "Everyday Call Her Bronzeada Tote",
+    "handle": "everyday-call-her-bronzeada-tote",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/2b23b71f-772a-4ca6-a16e-5c867182a1e6%20(1).jpg"
+  },
+  {
+    "productName": "Everyday Call Her Bronzeada Tote",
+    "handle": "everyday-call-her-bronzeada-tote",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/Screenshot%202026-06-30%20132301.png"
+  },
+  {
+    "productName": "Mocha Set",
+    "handle": "mocha-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/84a33de4-e4fe-4330-a309-da2ced4de126.jpg"
+  },
+  {
+    "productName": "Pre-Order Divine Grace Hand Chain",
+    "handle": "pre-order-divine-grace-hand-chain",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/f6abd538-10a6-437c-ab89-f4847185e741.jpg"
+  },
+  {
+    "productName": "Casa Lunar Set",
+    "handle": "casa-lunar-set",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/Facetune_12-08-2026-14-17-16.jpeg"
+  },
+  {
+    "productName": "Pre-Order Bronzeada Rosary Necklace",
+    "handle": "pre-order-bronzeada-rosary-necklace",
+    "sourceUrl": "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/WhatsApp%20Image%202026-08-19%20at%2011.22.06%20AM.jpeg"
+  }
+]
