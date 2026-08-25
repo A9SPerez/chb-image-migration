@@ -92,7 +92,7 @@ app.get("/", (req, res) => {
       <div class="card">
         <p>Shop: <strong>${shop}</strong></p>
         <p>This tool only adds product media. It does not change variants, prices, inventory, status, or collections.</p>
-        <a class="button" href="/auth?shop=${encodeURIComponent(shop)}">Authorize Shopify</a>
+        <a class="button" target="_top" rel="noopener "href="/auth?shop=${encodeURIComponent(shop)}">Authorize Shopify</a>
       </div>`));
   }
 
