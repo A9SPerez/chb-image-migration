@@ -237,7 +237,7 @@ async function getProduct(shop, handle) {
   return data.productByHandle;
 }
 
-function filenameFromUrl(url, fallback = "product-image.jpg") {
+function filenameFromUrl(url, fallback = "product-image") {
   try {
     const pathname = new URL(url).pathname;
     const name = decodeURIComponent(
@@ -250,25 +250,87 @@ function filenameFromUrl(url, fallback = "product-image.jpg") {
   }
 }
 
-function normalizeImageMime(contentType, filename) {
-  const clean = String(contentType || "")
-    .split(";")[0]
-    .trim()
-    .toLowerCase();
+function detectImageFormat(bytes, headerContentType = "") {
+  const b = new Uint8Array(bytes);
 
+  // JPEG
   if (
-    ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(clean)
+    b.length >= 3 &&
+    b[0] === 0xff &&
+    b[1] === 0xd8 &&
+    b[2] === 0xff
   ) {
-    return clean;
+    return {
+      mimeType: "image/jpeg",
+      extension: ".jpg",
+      format: "JPEG"
+    };
   }
 
-  const lower = filename.toLowerCase();
+  // PNG
+  if (
+    b.length >= 8 &&
+    b[0] === 0x89 &&
+    b[1] === 0x50 &&
+    b[2] === 0x4e &&
+    b[3] === 0x47 &&
+    b[4] === 0x0d &&
+    b[5] === 0x0a &&
+    b[6] === 0x1a &&
+    b[7] === 0x0a
+  ) {
+    return {
+      mimeType: "image/png",
+      extension: ".png",
+      format: "PNG"
+    };
+  }
 
-  if (lower.endsWith(".png")) return "image/png";
-  if (lower.endsWith(".webp")) return "image/webp";
-  if (lower.endsWith(".gif")) return "image/gif";
+  // GIF
+  if (
+    b.length >= 6 &&
+    b[0] === 0x47 &&
+    b[1] === 0x49 &&
+    b[2] === 0x46 &&
+    b[3] === 0x38
+  ) {
+    return {
+      mimeType: "image/gif",
+      extension: ".gif",
+      format: "GIF"
+    };
+  }
 
-  return "image/jpeg";
+  // WEBP: RIFF....WEBP
+  if (
+    b.length >= 12 &&
+    b[0] === 0x52 &&
+    b[1] === 0x49 &&
+    b[2] === 0x46 &&
+    b[3] === 0x46 &&
+    b[8] === 0x57 &&
+    b[9] === 0x45 &&
+    b[10] === 0x42 &&
+    b[11] === 0x50
+  ) {
+    return {
+      mimeType: "image/webp",
+      extension: ".webp",
+      format: "WEBP"
+    };
+  }
+
+  throw new Error(
+    `Unsupported or unrecognized image format. GoDaddy Content-Type: ${headerContentType || "unknown"}`
+  );
+}
+
+function normalizeFilename(originalName, extension, fallback) {
+  const base = String(originalName || fallback || "product-image")
+    .replace(/\.[a-zA-Z0-9]+$/, "")
+    .replace(/[^a-zA-Z0-9._-]+/g, "-");
+
+  return `${base}${extension}`;
 }
 
 async function downloadSourceImage(item) {
@@ -286,15 +348,8 @@ async function downloadSourceImage(item) {
     );
   }
 
-  const filename = filenameFromUrl(
-    item.sourceUrl,
-    `${item.handle}.jpg`
-  );
-
-  const mimeType = normalizeImageMime(
-    response.headers.get("content-type"),
-    filename
-  );
+  const headerContentType =
+    response.headers.get("content-type") || "";
 
   const bytes = await response.arrayBuffer();
 
@@ -302,10 +357,29 @@ async function downloadSourceImage(item) {
     throw new Error("Downloaded source image is empty.");
   }
 
+  const detected = detectImageFormat(
+    bytes,
+    headerContentType
+  );
+
+  const originalName = filenameFromUrl(
+    item.sourceUrl,
+    item.handle
+  );
+
+  const filename = normalizeFilename(
+    originalName,
+    detected.extension,
+    item.handle
+  );
+
   return {
     filename,
-    mimeType,
-    bytes
+    mimeType: detected.mimeType,
+    format: detected.format,
+    bytes,
+    byteLength: bytes.byteLength,
+    sourceContentType: headerContentType
   };
 }
 
@@ -335,6 +409,7 @@ async function createStagedProductImageTarget(shop, file) {
         {
           filename: file.filename,
           mimeType: file.mimeType,
+          fileSize: String(file.byteLength),
           httpMethod: "POST",
           resource: "PRODUCT_IMAGE"
         }
@@ -372,7 +447,10 @@ async function uploadToStagedTarget(target, file) {
 
   form.append(
     "file",
-    new Blob([file.bytes], { type: file.mimeType }),
+    new Blob(
+      [file.bytes],
+      { type: file.mimeType }
+    ),
     file.filename
   );
 
@@ -382,7 +460,9 @@ async function uploadToStagedTarget(target, file) {
   });
 
   if (!response.ok) {
-    const body = await response.text().catch(() => "");
+    const body = await response
+      .text()
+      .catch(() => "");
 
     throw new Error(
       `Staged upload failed (${response.status}): ${body.slice(0, 500)}`
@@ -446,22 +526,42 @@ async function attachStagedImageToProduct(
 async function addImage(shop, product, item) {
   const file = await downloadSourceImage(item);
 
-  const target = await createStagedProductImageTarget(
-    shop,
-    file
+  console.log(
+    `CHB image diagnostic: ${item.productName} | ` +
+    `${file.format} | ${file.mimeType} | ` +
+    `${file.filename} | ${file.byteLength} bytes | ` +
+    `source Content-Type: ${file.sourceContentType}`
   );
+
+  const target =
+    await createStagedProductImageTarget(
+      shop,
+      file
+    );
 
   await uploadToStagedTarget(
     target,
     file
   );
 
-  return await attachStagedImageToProduct(
-    shop,
-    product,
-    item,
-    target.resourceUrl
-  );
+  const productResult =
+    await attachStagedImageToProduct(
+      shop,
+      product,
+      item,
+      target.resourceUrl
+    );
+
+  return {
+    product: productResult,
+    diagnostic: {
+      format: file.format,
+      mimeType: file.mimeType,
+      filename: file.filename,
+      bytes: file.byteLength,
+      sourceContentType: file.sourceContentType
+    }
+  };
 }
 
 app.post("/dry-run", async (req, res) => {
@@ -511,7 +611,11 @@ app.post("/migrate-one", async (req, res) => {
   try {
     const p = await getProduct(shop, handle);
     if (!p) throw new Error("Product not found in Shopify");
-    if ((p.media?.nodes?.length || 0) > 0) {
+    if (
+  (p.media?.nodes || []).some(
+    (media) => media.status !== "FAILED"
+  )
+) {
       return res.send(page("Test skipped", `
         <h1>Test skipped safely</h1>
         <div class="card"><p>${escapeHtml(p.title)} already has Shopify media, so nothing was changed.</p></div>
@@ -544,7 +648,11 @@ app.post("/migrate-all", async (req, res) => {
         results.push({ name: item.productName, status: "NOT_FOUND" });
         continue;
       }
-      if ((p.media?.nodes?.length || 0) > 0) {
+      if (
+  (p.media?.nodes || []).some(
+    (media) => media.status !== "FAILED"
+  )
+) {
         results.push({ name: item.productName, status: "SKIPPED_HAS_MEDIA" });
         continue;
       }
