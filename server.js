@@ -1006,6 +1006,108 @@ app.get("/inspect-products-module", async (_req, res) => {
       .send(String(e));
   }
 });
+app.get("/inspect-product-chunk-mapping", async (_req, res) => {
+  try {
+    const siteUrl = "https://callherbronzeada.com/";
+
+    const siteResponse = await fetch(siteUrl, {
+      redirect: "follow",
+      headers: {
+        "User-Agent": "Mozilla/5.0 CHB-Image-Migration/1.0",
+        "Accept": "text/html,*/*"
+      }
+    });
+
+    const html = await siteResponse.text();
+
+    const rawScriptUrls = [
+      ...html.matchAll(
+        /<script[^>]+src=["']([^"']+)["']/gi
+      )
+    ].map((m) => m[1]);
+
+    const scriptUrls = [...new Set(rawScriptUrls)]
+      .map((src) => {
+        try {
+          return new URL(src, siteUrl).href;
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean);
+
+    const targets = [
+      "products-a9c171ea.js",
+      "products-6af415ef.js",
+      "products-15f07efe.js"
+    ];
+
+    const findings = [];
+
+    for (const scriptUrl of scriptUrls) {
+      try {
+        const scriptResponse = await fetch(scriptUrl, {
+          redirect: "follow",
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 CHB-Image-Migration/1.0",
+            "Accept": "*/*"
+          }
+        });
+
+        const text = await scriptResponse.text();
+
+        for (const target of targets) {
+          let start = 0;
+          let count = 0;
+
+          while (count < 20) {
+            const pos = text.indexOf(target, start);
+
+            if (pos === -1) break;
+
+            findings.push({
+              scriptUrl,
+              target,
+              position: pos,
+              fragment: text.slice(
+                Math.max(0, pos - 3000),
+                Math.min(text.length, pos + 5000)
+              )
+            });
+
+            start = pos + target.length;
+            count++;
+          }
+        }
+      } catch (e) {
+        findings.push({
+          scriptUrl,
+          error: String(e)
+        });
+      }
+    }
+
+    res
+      .type("text/plain")
+      .send(
+        JSON.stringify(
+          {
+            targetCount: targets.length,
+            findingCount: findings.length,
+            findings
+          },
+          null,
+          2
+        )
+      );
+  } catch (e) {
+    res
+      .status(500)
+      .type("text/plain")
+      .send(String(e));
+  }
+}); 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`CHB Image Migration listening on port ${PORT}`);
 });
