@@ -821,7 +821,191 @@ app.get("/discover-godaddy", async (_req, res) => {
       .send(String(e));
   }
 });
+app.get("/inspect-products-module", async (_req, res) => {
+  try {
+    const siteUrl = "https://callherbronzeada.com/";
 
+    const siteResponse = await fetch(siteUrl, {
+      redirect: "follow",
+      headers: {
+        "User-Agent": "Mozilla/5.0 CHB-Image-Migration/1.0",
+        "Accept": "text/html,*/*"
+      }
+    });
+
+    const html = await siteResponse.text();
+
+    const rawScriptUrls = [
+      ...html.matchAll(
+        /<script[^>]+src=["']([^"']+)["']/gi
+      )
+    ].map((m) => m[1]);
+
+    const scriptUrls = [...new Set(rawScriptUrls)]
+      .map((src) => {
+        try {
+          return new URL(src, siteUrl).href;
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean);
+
+    const discoveries = [];
+
+    for (const scriptUrl of scriptUrls) {
+      try {
+        const scriptResponse = await fetch(scriptUrl, {
+          redirect: "follow",
+          headers: {
+            "User-Agent": "Mozilla/5.0 CHB-Image-Migration/1.0",
+            "Accept": "*/*"
+          }
+        });
+
+        const text = await scriptResponse.text();
+
+        const productModuleNames = [
+          ...text.matchAll(
+            /products-[a-zA-Z0-9_-]+\.js/g
+          )
+        ].map((m) => m[0]);
+
+        for (const moduleName of [...new Set(productModuleNames)]) {
+          const possibleBases = [
+            new URL(scriptUrl),
+            new URL(siteUrl)
+          ];
+
+          for (const base of possibleBases) {
+            try {
+              const moduleUrl = new URL(
+                moduleName,
+                base
+              ).href;
+
+              const moduleResponse = await fetch(moduleUrl, {
+                redirect: "follow",
+                headers: {
+                  "User-Agent":
+                    "Mozilla/5.0 CHB-Image-Migration/1.0",
+                  "Accept": "*/*"
+                }
+              });
+
+              const moduleText =
+                await moduleResponse.text();
+
+              if (!moduleResponse.ok) {
+                discoveries.push({
+                  moduleName,
+                  moduleUrl,
+                  status: moduleResponse.status
+                });
+                continue;
+              }
+
+              const lower = moduleText.toLowerCase();
+
+              const keywords = [
+                "fetch(",
+                "axios",
+                "productid",
+                "productinstanceid",
+                "images",
+                "gallery",
+                "media",
+                "catalog",
+                "inventory",
+                "graphql",
+                "query",
+                "endpoint",
+                "url",
+                "wsimg"
+              ];
+
+              const matches = [];
+
+              for (const keyword of keywords) {
+                let start = 0;
+                let count = 0;
+
+                while (count < 25) {
+                  const pos = lower.indexOf(
+                    keyword.toLowerCase(),
+                    start
+                  );
+
+                  if (pos === -1) break;
+
+                  matches.push({
+                    keyword,
+                    position: pos,
+                    fragment: moduleText.slice(
+                      Math.max(0, pos - 700),
+                      Math.min(
+                        moduleText.length,
+                        pos + 1800
+                      )
+                    )
+                  });
+
+                  start = pos + keyword.length;
+                  count++;
+                }
+              }
+
+              const urls = [
+                ...moduleText.matchAll(
+                  /https?:\/\/[^"'`\\\s<>]+/g
+                )
+              ].map((m) => m[0]);
+
+              discoveries.push({
+                moduleName,
+                moduleUrl,
+                status: moduleResponse.status,
+                length: moduleText.length,
+                possibleUrls: [
+                  ...new Set(urls)
+                ].slice(0, 300),
+                matches: matches.slice(0, 250)
+              });
+            } catch (e) {
+              discoveries.push({
+                moduleName,
+                error: String(e)
+              });
+            }
+          }
+        }
+      } catch (e) {
+        discoveries.push({
+          scriptUrl,
+          error: String(e)
+        });
+      }
+    }
+
+    res
+      .type("text/plain")
+      .send(
+        JSON.stringify(
+          {
+            count: discoveries.length,
+            discoveries
+          },
+          null,
+          2
+        )
+      );
+  } catch (e) {
+    res
+      .status(500)
+      .type("text/plain")
+      .send(String(e));
+  }
+});
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`CHB Image Migration listening on port ${PORT}`);
 });
