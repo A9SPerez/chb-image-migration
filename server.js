@@ -1730,6 +1730,294 @@ app.get("/gallery-dry-run-all", async (req, res) => {
       );
   }
 });
+app.get("/gallery-migrate-zero-batch", async (req, res) => {
+  try {
+    const shop = String(
+      req.query.shop || ALLOWED_SHOP || ""
+    ).toLowerCase();
+
+    if (!validShop(shop) || !tokens.has(shop)) {
+      return res
+        .status(401)
+        .send("Authorize Shopify first");
+    }
+
+    const GODADDY_BASE =
+      "https://b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe.mysimplestore.com";
+
+    const start = Math.max(
+      0,
+      Number.parseInt(String(req.query.start || "0"), 10) || 0
+    );
+
+    const limit = 5;
+
+    const productsByHandle = new Map();
+
+    for (const item of manifest) {
+      if (!productsByHandle.has(item.handle)) {
+        productsByHandle.set(item.handle, {
+          handle: item.handle,
+          productName: item.productName
+        });
+      }
+    }
+
+    const products = [...productsByHandle.values()];
+
+    const eligible = [];
+    const scanResults = [];
+
+    for (const item of products) {
+      try {
+        const shopifyProduct =
+          await getProduct(shop, item.handle);
+
+        if (!shopifyProduct) {
+          scanResults.push({
+            name: item.productName,
+            handle: item.handle,
+            status: "NOT_FOUND_IN_SHOPIFY"
+          });
+          continue;
+        }
+
+        const validMedia =
+          (shopifyProduct.media?.nodes || [])
+            .filter(
+              (media) =>
+                media.status !== "FAILED"
+            );
+
+        if (validMedia.length !== 0) {
+          continue;
+        }
+
+        const sourceUrl =
+          `${GODADDY_BASE}/api/v2/products/` +
+          `${encodeURIComponent(item.handle)}?app=vnext`;
+
+        const sourceResponse =
+          await fetch(sourceUrl, {
+            headers: {
+              "User-Agent":
+                "Mozilla/5.0 CHB-Image-Migration/1.0",
+              "Accept": "application/json"
+            }
+          });
+
+        if (!sourceResponse.ok) {
+          scanResults.push({
+            name: item.productName,
+            handle: item.handle,
+            status:
+              `SOURCE_API_${sourceResponse.status}`
+          });
+          continue;
+        }
+
+        const sourceProduct =
+          await sourceResponse.json();
+
+        const sourceImages =
+          (sourceProduct.assets || [])
+            .filter(
+              (asset) =>
+                asset &&
+                asset.type === "image" &&
+                asset.original_url
+            )
+            .map((asset, index) => ({
+              position: index + 1,
+              sourceUrl: String(
+                asset.original_url
+              ).split("/:/rs=")[0],
+              productName:
+                sourceProduct.name ||
+                item.productName,
+              handle: item.handle
+            }));
+
+        if (!sourceImages.length) {
+          scanResults.push({
+            name:
+              sourceProduct.name ||
+              item.productName,
+            handle: item.handle,
+            status: "NO_SOURCE_IMAGES"
+          });
+          continue;
+        }
+
+        eligible.push({
+          name:
+            sourceProduct.name ||
+            item.productName,
+          handle: item.handle,
+          shopifyProduct,
+          sourceImages
+        });
+
+        await new Promise(
+          (resolve) =>
+            setTimeout(resolve, 100)
+        );
+      } catch (e) {
+        scanResults.push({
+          name: item.productName,
+          handle: item.handle,
+          status: `SCAN_ERROR: ${String(e)}`
+        });
+      }
+    }
+
+    const batch =
+      eligible.slice(start, start + limit);
+
+    const results = [];
+
+    for (const product of batch) {
+      let added = 0;
+      let error = "";
+
+      for (const image of product.sourceImages) {
+        try {
+          console.log(
+            `Zero-media migration: ${product.name} ` +
+            `image ${image.position}/${product.sourceImages.length}`
+          );
+
+          await addImage(
+            shop,
+            product.shopifyProduct,
+            image
+          );
+
+          added++;
+
+          await new Promise(
+            (resolve) =>
+              setTimeout(resolve, 500)
+          );
+        } catch (e) {
+          error = String(e);
+          break;
+        }
+      }
+
+      results.push({
+        name: product.name,
+        handle: product.handle,
+        sourceImages:
+          product.sourceImages.length,
+        added,
+        status:
+          error
+            ? "ERROR"
+            : "SUBMITTED",
+        error
+      });
+    }
+
+    const nextStart =
+      start + batch.length;
+
+    const hasMore =
+      nextStart < eligible.length;
+
+    const rows = results
+      .map(
+        (r) => `
+          <tr>
+            <td>${escapeHtml(r.name)}</td>
+            <td><code>${escapeHtml(r.handle)}</code></td>
+            <td>${r.sourceImages}</td>
+            <td>${r.added}</td>
+            <td>${escapeHtml(r.status)}</td>
+            <td>${escapeHtml(r.error || "")}</td>
+          </tr>
+        `
+      )
+      .join("");
+
+    const nextLink = hasMore
+      ? `
+        <a
+          class="button"
+          href="/gallery-migrate-zero-batch?shop=${encodeURIComponent(shop)}&start=${nextStart}"
+        >
+          Run next batch
+        </a>
+      `
+      : `
+        <p><strong>No more zero-media products remain in this run.</strong></p>
+      `;
+
+    return res.send(
+      page(
+        "Zero-media gallery migration",
+        `
+          <h1>Zero-media gallery migration</h1>
+
+          <div class="card">
+            <p>
+              <strong>Eligible zero-media products:</strong>
+              ${eligible.length}
+            </p>
+
+            <p>
+              <strong>Batch start:</strong>
+              ${start}
+            </p>
+
+            <p>
+              <strong>Products processed now:</strong>
+              ${batch.length}
+            </p>
+
+            <p>
+              Products that already had valid Shopify media were not touched.
+            </p>
+          </div>
+
+          <div class="card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Handle</th>
+                  <th>Source images</th>
+                  <th>Submitted</th>
+                  <th>Status</th>
+                  <th>Error</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+          </div>
+
+          ${nextLink}
+        `
+      )
+    );
+  } catch (e) {
+    return res
+      .status(500)
+      .send(
+        page(
+          "Batch migration stopped",
+          `
+            <h1>Batch migration stopped</h1>
+            <div class="card">
+              <pre>${escapeHtml(String(e))}</pre>
+            </div>
+          `
+        )
+      );
+  }
+});
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`CHB Image Migration listening on port ${PORT}`);
 });
