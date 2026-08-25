@@ -1259,6 +1259,213 @@ app.get("/gallery-dry-run-one", async (req, res) => {
       );
   }
 });
+app.get("/gallery-migrate-one", async (req, res) => {
+  try {
+    const shop = String(
+      req.query.shop || ALLOWED_SHOP || ""
+    ).toLowerCase();
+
+    if (!validShop(shop) || !tokens.has(shop)) {
+      return res
+        .status(401)
+        .send("Authorize Shopify first");
+    }
+
+    const handle = "pre-order-finale-verde-set";
+    const productName = "Finale Verde Set";
+
+    const godaddyUrl =
+      "https://b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe.mysimplestore.com" +
+      "/api/v2/products/" +
+      encodeURIComponent(handle) +
+      "?app=vnext";
+
+    const sourceResponse = await fetch(godaddyUrl, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 CHB-Image-Migration/1.0",
+        "Accept": "application/json"
+      }
+    });
+
+    if (!sourceResponse.ok) {
+      throw new Error(
+        `GoDaddy product API failed: ${sourceResponse.status}`
+      );
+    }
+
+    const sourceProduct =
+      await sourceResponse.json();
+
+    const sourceImages = (sourceProduct.assets || [])
+      .filter(
+        (asset) =>
+          asset &&
+          asset.type === "image" &&
+          asset.original_url
+      )
+      .map((asset, index) => ({
+        position: index + 1,
+        sourceUrl: String(asset.original_url)
+          .split("/:/rs=")[0],
+        productName,
+        handle
+      }));
+
+    const shopifyProduct =
+      await getProduct(shop, handle);
+
+    if (!shopifyProduct) {
+      throw new Error(
+        "Finale Verde Set not found in Shopify"
+      );
+    }
+
+    const currentMedia =
+      (shopifyProduct.media?.nodes || [])
+        .filter(
+          (media) =>
+            media.status !== "FAILED"
+        );
+
+    if (sourceImages.length !== 9) {
+      throw new Error(
+        `Safety stop: expected 9 source images but found ${sourceImages.length}`
+      );
+    }
+
+    if (currentMedia.length !== 1) {
+      throw new Error(
+        `Safety stop: expected 1 current Shopify image but found ${currentMedia.length}`
+      );
+    }
+
+    const imagesToAdd = sourceImages.slice(1);
+
+    const results = [];
+
+    for (const item of imagesToAdd) {
+      try {
+        console.log(
+          `Gallery migration: ${productName} image ${item.position}/9`
+        );
+
+        await addImage(
+          shop,
+          shopifyProduct,
+          item
+        );
+
+        results.push({
+          position: item.position,
+          status: "SUBMITTED"
+        });
+
+        await new Promise(
+          (resolve) =>
+            setTimeout(resolve, 500)
+        );
+      } catch (e) {
+        results.push({
+          position: item.position,
+          status: "ERROR",
+          error: String(e)
+        });
+
+        break;
+      }
+    }
+
+    const submitted =
+      results.filter(
+        (r) => r.status === "SUBMITTED"
+      ).length;
+
+    const errors =
+      results.filter(
+        (r) => r.status === "ERROR"
+      ).length;
+
+    const rows = results
+      .map(
+        (r) => `
+          <tr>
+            <td>${r.position}</td>
+            <td>${escapeHtml(r.status)}</td>
+            <td>${escapeHtml(r.error || "")}</td>
+          </tr>
+        `
+      )
+      .join("");
+
+    return res.send(
+      page(
+        "Finale Verde gallery migration",
+        `
+          <h1>Finale Verde gallery migration</h1>
+
+          <div class="card">
+            <p>
+              <strong>Source images:</strong>
+              ${sourceImages.length}
+            </p>
+
+            <p>
+              <strong>Already in Shopify:</strong>
+              1
+            </p>
+
+            <p>
+              <strong>Submitted now:</strong>
+              ${submitted}
+            </p>
+
+            <p>
+              <strong>Errors:</strong>
+              ${errors}
+            </p>
+          </div>
+
+          <div class="card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Position</th>
+                  <th>Status</th>
+                  <th>Error</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+          </div>
+
+          <a
+            class="button secondary"
+            href="/?shop=${encodeURIComponent(shop)}"
+          >
+            Back
+          </a>
+        `
+      )
+    );
+  } catch (e) {
+    return res
+      .status(500)
+      .send(
+        page(
+          "Gallery migration stopped",
+          `
+            <h1>Gallery migration stopped</h1>
+            <div class="card">
+              <pre>${escapeHtml(String(e))}</pre>
+            </div>
+          `
+        )
+      );
+  }
+});
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`CHB Image Migration listening on port ${PORT}`);
 });
