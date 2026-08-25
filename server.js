@@ -573,45 +573,7 @@ async function addImage(shop, product, item) {
     }
   };
 }
-  const file = await downloadSourceImage(item);
-
-  console.log(
-    `CHB image diagnostic: ${item.productName} | ` +
-    `${file.format} | ${file.mimeType} | ` +
-    `${file.filename} | ${file.byteLength} bytes | ` +
-    `source Content-Type: ${file.sourceContentType}`
-  );
-
-  const target =
-    await createStagedProductImageTarget(
-      shop,
-      file
-    );
-
-  await uploadToStagedTarget(
-    target,
-    file
-  );
-
-  const productResult =
-    await attachStagedImageToProduct(
-      shop,
-      product,
-      item,
-      target.resourceUrl
-    );
-
-  return {
-    product: productResult,
-    diagnostic: {
-      format: file.format,
-      mimeType: file.mimeType,
-      filename: file.filename,
-      bytes: file.byteLength,
-      sourceContentType: file.sourceContentType
-    }
-  };
-}
+  
 
 app.post("/dry-run", async (req, res) => {
   const shop = String(req.body.shop || "").toLowerCase();
