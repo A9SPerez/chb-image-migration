@@ -237,28 +237,231 @@ async function getProduct(shop, handle) {
   return data.productByHandle;
 }
 
-async function addImage(shop, product, item) {
-  // productUpdate with media is the current recommended path.
-  const data = await gql(shop, `
-    mutation AddMedia($product: ProductUpdateInput!, $media: [CreateMediaInput!]) {
-      productUpdate(product: $product, media: $media) {
-        product { id title handle }
-        userErrors { field message }
+function filenameFromUrl(url, fallback = "product-image.jpg") {
+  try {
+    const pathname = new URL(url).pathname;
+    const name = decodeURIComponent(
+      pathname.split("/").pop() || ""
+    ).trim();
+
+    return name || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function normalizeImageMime(contentType, filename) {
+  const clean = String(contentType || "")
+    .split(";")[0]
+    .trim()
+    .toLowerCase();
+
+  if (
+    ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(clean)
+  ) {
+    return clean;
+  }
+
+  const lower = filename.toLowerCase();
+
+  if (lower.endsWith(".png")) return "image/png";
+  if (lower.endsWith(".webp")) return "image/webp";
+  if (lower.endsWith(".gif")) return "image/gif";
+
+  return "image/jpeg";
+}
+
+async function downloadSourceImage(item) {
+  const response = await fetch(item.sourceUrl, {
+    redirect: "follow",
+    headers: {
+      "User-Agent": "Mozilla/5.0 CHB-Image-Migration/1.0",
+      Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8"
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Source image download failed (${response.status}) for ${item.sourceUrl}`
+    );
+  }
+
+  const filename = filenameFromUrl(
+    item.sourceUrl,
+    `${item.handle}.jpg`
+  );
+
+  const mimeType = normalizeImageMime(
+    response.headers.get("content-type"),
+    filename
+  );
+
+  const bytes = await response.arrayBuffer();
+
+  if (!bytes.byteLength) {
+    throw new Error("Downloaded source image is empty.");
+  }
+
+  return {
+    filename,
+    mimeType,
+    bytes
+  };
+}
+
+async function createStagedProductImageTarget(shop, file) {
+  const data = await gql(
+    shop,
+    `
+    mutation StagedProductImage($input: [StagedUploadInput!]!) {
+      stagedUploadsCreate(input: $input) {
+        stagedTargets {
+          url
+          resourceUrl
+          parameters {
+            name
+            value
+          }
+        }
+        userErrors {
+          field
+          message
+        }
       }
-    }`, {
-      product: { id: product.id },
-      media: [{
-        originalSource: item.sourceUrl,
-        mediaContentType: "IMAGE",
-        alt: item.productName
-      }]
-    });
+    }
+    `,
+    {
+      input: [
+        {
+          filename: file.filename,
+          mimeType: file.mimeType,
+          httpMethod: "POST",
+          resource: "PRODUCT_IMAGE"
+        }
+      ]
+    }
+  );
+
+  const result = data.stagedUploadsCreate;
+
+  if (result.userErrors?.length) {
+    throw new Error(
+      `stagedUploadsCreate: ${result.userErrors
+        .map((e) => e.message)
+        .join("; ")}`
+    );
+  }
+
+  const target = result.stagedTargets?.[0];
+
+  if (!target?.url || !target?.resourceUrl) {
+    throw new Error(
+      "Shopify did not return a staged upload target."
+    );
+  }
+
+  return target;
+}
+
+async function uploadToStagedTarget(target, file) {
+  const form = new FormData();
+
+  for (const p of target.parameters || []) {
+    form.append(p.name, p.value);
+  }
+
+  form.append(
+    "file",
+    new Blob([file.bytes], { type: file.mimeType }),
+    file.filename
+  );
+
+  const response = await fetch(target.url, {
+    method: "POST",
+    body: form
+  });
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => "");
+
+    throw new Error(
+      `Staged upload failed (${response.status}): ${body.slice(0, 500)}`
+    );
+  }
+}
+
+async function attachStagedImageToProduct(
+  shop,
+  product,
+  item,
+  resourceUrl
+) {
+  const data = await gql(
+    shop,
+    `
+    mutation AddMedia(
+      $product: ProductUpdateInput!,
+      $media: [CreateMediaInput!]
+    ) {
+      productUpdate(product: $product, media: $media) {
+        product {
+          id
+          title
+          handle
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+    `,
+    {
+      product: {
+        id: product.id
+      },
+      media: [
+        {
+          originalSource: resourceUrl,
+          mediaContentType: "IMAGE",
+          alt: item.productName
+        }
+      ]
+    }
+  );
 
   const result = data.productUpdate;
+
   if (result.userErrors?.length) {
-    throw new Error(result.userErrors.map(e => e.message).join("; "));
+    throw new Error(
+      `productUpdate: ${result.userErrors
+        .map((e) => e.message)
+        .join("; ")}`
+    );
   }
+
   return result.product;
+}
+
+async function addImage(shop, product, item) {
+  const file = await downloadSourceImage(item);
+
+  const target = await createStagedProductImageTarget(
+    shop,
+    file
+  );
+
+  await uploadToStagedTarget(
+    target,
+    file
+  );
+
+  return await attachStagedImageToProduct(
+    shop,
+    product,
+    item,
+    target.resourceUrl
+  );
 }
 
 app.post("/dry-run", async (req, res) => {
