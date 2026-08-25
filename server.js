@@ -707,50 +707,81 @@ app.get("/discover-godaddy", async (_req, res) => {
 
     const html = await siteResponse.text();
 
-    const matches = [
+    const wsimgUrls = [
       ...html.matchAll(
-        /https?:\/\/[a-zA-Z0-9.-]+\.mysimplestore\.com/g
+        /https?:\/\/img\d*\.wsimg\.com\/[^"'<>\\\s]+/g
       )
     ].map((m) => m[0]);
 
-    const hosts = [...new Set(matches)];
+    const scriptUrls = [
+      ...html.matchAll(
+        /<script[^>]+src=["']([^"']+)["']/gi
+      )
+    ].map((m) => m[1]);
+
+    const interestingFragments = [];
+
+    const keywords = [
+      "product",
+      "products",
+      "catalog",
+      "store",
+      "commerce",
+      "wsimg",
+      "productId",
+      "product_id",
+      "image",
+      "images",
+      "gallery",
+      "inventory"
+    ];
+
+    for (const keyword of keywords) {
+      let start = 0;
+      let count = 0;
+
+      while (count < 10) {
+        const pos = html
+          .toLowerCase()
+          .indexOf(keyword.toLowerCase(), start);
+
+        if (pos === -1) break;
+
+        const fragment = html.slice(
+          Math.max(0, pos - 350),
+          Math.min(html.length, pos + 900)
+        );
+
+        interestingFragments.push({
+          keyword,
+          position: pos,
+          fragment
+        });
+
+        start = pos + keyword.length;
+        count++;
+      }
+    }
+
+    const inlineJsonCandidates = [
+      ...html.matchAll(
+        /<script[^>]*type=["']application\/(?:ld\+)?json["'][^>]*>([\s\S]*?)<\/script>/gi
+      )
+    ].map((m) => m[1].trim());
 
     const report = {
       websiteStatus: siteResponse.status,
       htmlLength: html.length,
-      mySimpleStoreHosts: hosts,
-      apiTests: []
+      wsimgUrlCount: wsimgUrls.length,
+      wsimgUrls: [...new Set(wsimgUrls)].slice(0, 300),
+      scriptUrlCount: scriptUrls.length,
+      scriptUrls: [...new Set(scriptUrls)].slice(0, 100),
+      inlineJsonCandidateCount: inlineJsonCandidates.length,
+      inlineJsonCandidates: inlineJsonCandidates
+        .slice(0, 30)
+        .map((x) => x.slice(0, 10000)),
+      interestingFragments: interestingFragments.slice(0, 100)
     };
-
-    for (const base of hosts) {
-      const apiUrl =
-        `${base}/api/v2/products` +
-        `?page_fallback=true&app=vnext&page=1&per_page=100`;
-
-      try {
-        const apiResponse = await fetch(apiUrl, {
-          headers: {
-            "User-Agent": "Mozilla/5.0 CHB-Image-Migration/1.0",
-            "Accept": "application/json,*/*"
-          }
-        });
-
-        const body = await apiResponse.text();
-
-        report.apiTests.push({
-          base,
-          status: apiResponse.status,
-          contentType:
-            apiResponse.headers.get("content-type"),
-          preview: body.slice(0, 15000)
-        });
-      } catch (e) {
-        report.apiTests.push({
-          base,
-          error: String(e)
-        });
-      }
-    }
 
     res
       .type("text/plain")
