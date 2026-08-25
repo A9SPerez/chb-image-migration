@@ -533,6 +533,55 @@ async function addImage(shop, product, item) {
     `source Content-Type: ${file.sourceContentType}`
   );
 
+  console.log("STEP 1: requesting Shopify staged upload target");
+
+  const target =
+    await createStagedProductImageTarget(
+      shop,
+      file
+    );
+
+  console.log(
+    `STEP 2: staged target received | resourceUrl: ${target.resourceUrl}`
+  );
+
+  await uploadToStagedTarget(
+    target,
+    file
+  );
+
+  console.log("STEP 3: file uploaded to Shopify staged storage");
+
+  const productResult =
+    await attachStagedImageToProduct(
+      shop,
+      product,
+      item,
+      target.resourceUrl
+    );
+
+  console.log("STEP 4: staged image attached to product");
+
+  return {
+    product: productResult,
+    diagnostic: {
+      format: file.format,
+      mimeType: file.mimeType,
+      filename: file.filename,
+      bytes: file.byteLength,
+      sourceContentType: file.sourceContentType
+    }
+  };
+}
+  const file = await downloadSourceImage(item);
+
+  console.log(
+    `CHB image diagnostic: ${item.productName} | ` +
+    `${file.format} | ${file.mimeType} | ` +
+    `${file.filename} | ${file.byteLength} bytes | ` +
+    `source Content-Type: ${file.sourceContentType}`
+  );
+
   const target =
     await createStagedProductImageTarget(
       shop,
