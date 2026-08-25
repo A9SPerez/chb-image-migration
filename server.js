@@ -707,89 +707,121 @@ app.get("/discover-godaddy", async (_req, res) => {
 
     const html = await siteResponse.text();
 
-    const wsimgUrls = [
-      ...html.matchAll(
-        /https?:\/\/img\d*\.wsimg\.com\/[^"'<>\\\s]+/g
-      )
-    ].map((m) => m[0]);
-
-    const scriptUrls = [
+    const rawScriptUrls = [
       ...html.matchAll(
         /<script[^>]+src=["']([^"']+)["']/gi
       )
     ].map((m) => m[1]);
 
-    const interestingFragments = [];
+    const scriptUrls = [...new Set(rawScriptUrls)]
+      .map((src) => {
+        try {
+          return new URL(src, siteUrl).href;
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean);
 
-    const keywords = [
-      "product",
-      "products",
-      "catalog",
-      "store",
-      "commerce",
-      "wsimg",
-      "productId",
-      "product_id",
-      "image",
-      "images",
-      "gallery",
-      "inventory"
-    ];
+    const scriptReports = [];
 
-    for (const keyword of keywords) {
-      let start = 0;
-      let count = 0;
-
-      while (count < 10) {
-        const pos = html
-          .toLowerCase()
-          .indexOf(keyword.toLowerCase(), start);
-
-        if (pos === -1) break;
-
-        const fragment = html.slice(
-          Math.max(0, pos - 350),
-          Math.min(html.length, pos + 900)
-        );
-
-        interestingFragments.push({
-          keyword,
-          position: pos,
-          fragment
+    for (const scriptUrl of scriptUrls) {
+      try {
+        const scriptResponse = await fetch(scriptUrl, {
+          redirect: "follow",
+          headers: {
+            "User-Agent": "Mozilla/5.0 CHB-Image-Migration/1.0",
+            "Accept": "*/*"
+          }
         });
 
-        start = pos + keyword.length;
-        count++;
+        const text = await scriptResponse.text();
+        const lower = text.toLowerCase();
+
+        const keywords = [
+          "product",
+          "products",
+          "catalog",
+          "commerce",
+          "gallery",
+          "images",
+          "imageurl",
+          "productid",
+          "product_id",
+          "/api/",
+          "graphql",
+          "storefront",
+          "inventory"
+        ];
+
+        const matches = [];
+
+        for (const keyword of keywords) {
+          let start = 0;
+          let count = 0;
+
+          while (count < 15) {
+            const pos = lower.indexOf(
+              keyword.toLowerCase(),
+              start
+            );
+
+            if (pos === -1) break;
+
+            matches.push({
+              keyword,
+              position: pos,
+              fragment: text.slice(
+                Math.max(0, pos - 500),
+                Math.min(text.length, pos + 1200)
+              )
+            });
+
+            start = pos + keyword.length;
+            count++;
+          }
+        }
+
+        const urls = [
+          ...text.matchAll(
+            /https?:\/\/[^"'`\\\s<>]+/g
+          )
+        ].map((m) => m[0]);
+
+        scriptReports.push({
+          scriptUrl,
+          status: scriptResponse.status,
+          length: text.length,
+          possibleUrls: [...new Set(urls)].slice(0, 200),
+          matches: matches.slice(0, 150)
+        });
+      } catch (e) {
+        scriptReports.push({
+          scriptUrl,
+          error: String(e)
+        });
       }
     }
-
-    const inlineJsonCandidates = [
-      ...html.matchAll(
-        /<script[^>]*type=["']application\/(?:ld\+)?json["'][^>]*>([\s\S]*?)<\/script>/gi
-      )
-    ].map((m) => m[1].trim());
 
     const report = {
       websiteStatus: siteResponse.status,
       htmlLength: html.length,
-      wsimgUrlCount: wsimgUrls.length,
-      wsimgUrls: [...new Set(wsimgUrls)].slice(0, 300),
-      scriptUrlCount: scriptUrls.length,
-      scriptUrls: [...new Set(scriptUrls)].slice(0, 100),
-      inlineJsonCandidateCount: inlineJsonCandidates.length,
-      inlineJsonCandidates: inlineJsonCandidates
-        .slice(0, 30)
-        .map((x) => x.slice(0, 10000)),
-      interestingFragments: interestingFragments.slice(0, 100)
+      scriptCount: scriptUrls.length,
+      scriptUrls,
+      scriptReports
     };
 
     res
       .type("text/plain")
       .send(JSON.stringify(report, null, 2));
   } catch (e) {
-    res.status(500).type("text/plain").send(String(e));
+    res
+      .status(500)
+      .type("text/plain")
+      .send(String(e));
   }
 });
+
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`CHB Image Migration listening on port ${PORT}`);
 });
