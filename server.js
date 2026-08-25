@@ -1466,6 +1466,270 @@ app.get("/gallery-migrate-one", async (req, res) => {
       );
   }
 });
+app.get("/gallery-dry-run-all", async (req, res) => {
+  try {
+    const shop = String(
+      req.query.shop || ALLOWED_SHOP || ""
+    ).toLowerCase();
+
+    if (!validShop(shop) || !tokens.has(shop)) {
+      return res
+        .status(401)
+        .send("Authorize Shopify first");
+    }
+
+    const GODADDY_BASE =
+      "https://b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe.mysimplestore.com";
+
+    // One entry per Shopify product handle.
+    const productsByHandle = new Map();
+
+    for (const item of manifest) {
+      if (!productsByHandle.has(item.handle)) {
+        productsByHandle.set(item.handle, {
+          handle: item.handle,
+          productName: item.productName
+        });
+      }
+    }
+
+    const products = [...productsByHandle.values()];
+    const results = [];
+
+    for (const item of products) {
+      try {
+        const godaddyUrl =
+          `${GODADDY_BASE}/api/v2/products/` +
+          `${encodeURIComponent(item.handle)}?app=vnext`;
+
+        const sourceResponse = await fetch(godaddyUrl, {
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 CHB-Image-Migration/1.0",
+            "Accept": "application/json"
+          }
+        });
+
+        if (!sourceResponse.ok) {
+          results.push({
+            name: item.productName,
+            handle: item.handle,
+            sourceImages: 0,
+            shopifyMedia: "",
+            missing: "",
+            status:
+              `SOURCE_API_${sourceResponse.status}`
+          });
+          continue;
+        }
+
+        const sourceProduct =
+          await sourceResponse.json();
+
+        const sourceImages =
+          (sourceProduct.assets || []).filter(
+            (asset) =>
+              asset &&
+              asset.type === "image" &&
+              asset.original_url
+          );
+
+        const shopifyProduct =
+          await getProduct(shop, item.handle);
+
+        if (!shopifyProduct) {
+          results.push({
+            name:
+              sourceProduct.name ||
+              item.productName,
+            handle: item.handle,
+            sourceImages: sourceImages.length,
+            shopifyMedia: "",
+            missing: "",
+            status: "NOT_FOUND_IN_SHOPIFY"
+          });
+          continue;
+        }
+
+        const validMedia =
+          (shopifyProduct.media?.nodes || [])
+            .filter(
+              (media) =>
+                media.status !== "FAILED"
+            );
+
+        const sourceCount =
+          sourceImages.length;
+
+        const shopifyCount =
+          validMedia.length;
+
+        const missing =
+          Math.max(
+            0,
+            sourceCount - shopifyCount
+          );
+
+        let status = "READY";
+
+        if (sourceCount === 0) {
+          status = "NO_SOURCE_IMAGES";
+        } else if (shopifyCount === sourceCount) {
+          status = "COMPLETE";
+        } else if (shopifyCount > sourceCount) {
+          status = "REVIEW_MORE_SHOPIFY_MEDIA";
+        }
+
+        results.push({
+          name:
+            sourceProduct.name ||
+            item.productName,
+          handle: item.handle,
+          sourceImages: sourceCount,
+          shopifyMedia: shopifyCount,
+          missing,
+          status
+        });
+
+        // Gentle pacing.
+        await new Promise(
+          (resolve) =>
+            setTimeout(resolve, 150)
+        );
+      } catch (e) {
+        results.push({
+          name: item.productName,
+          handle: item.handle,
+          sourceImages: "",
+          shopifyMedia: "",
+          missing: "",
+          status: `ERROR: ${String(e)}`
+        });
+      }
+    }
+
+    const totals = results.reduce(
+      (acc, row) => {
+        acc.products++;
+
+        if (
+          typeof row.sourceImages === "number"
+        ) {
+          acc.sourceImages +=
+            row.sourceImages;
+        }
+
+        if (
+          typeof row.shopifyMedia === "number"
+        ) {
+          acc.shopifyMedia +=
+            row.shopifyMedia;
+        }
+
+        if (
+          typeof row.missing === "number"
+        ) {
+          acc.missing +=
+            row.missing;
+        }
+
+        if (row.status === "COMPLETE") {
+          acc.complete++;
+        }
+
+        if (row.status === "READY") {
+          acc.ready++;
+        }
+
+        if (
+          !["READY", "COMPLETE"].includes(
+            row.status
+          )
+        ) {
+          acc.review++;
+        }
+
+        return acc;
+      },
+      {
+        products: 0,
+        sourceImages: 0,
+        shopifyMedia: 0,
+        missing: 0,
+        complete: 0,
+        ready: 0,
+        review: 0
+      }
+    );
+
+    const rows = results
+      .map(
+        (r) => `
+          <tr>
+            <td>${escapeHtml(r.name)}</td>
+            <td><code>${escapeHtml(r.handle)}</code></td>
+            <td>${escapeHtml(r.sourceImages)}</td>
+            <td>${escapeHtml(r.shopifyMedia)}</td>
+            <td>${escapeHtml(r.missing)}</td>
+            <td>${escapeHtml(r.status)}</td>
+          </tr>
+        `
+      )
+      .join("");
+
+    return res.send(
+      page(
+        "Gallery dry run — all products",
+        `
+          <h1>Gallery dry run — all products</h1>
+
+          <div class="card">
+            <p><strong>Products checked:</strong> ${totals.products}</p>
+            <p><strong>Source images:</strong> ${totals.sourceImages}</p>
+            <p><strong>Current Shopify media:</strong> ${totals.shopifyMedia}</p>
+            <p><strong>Apparently missing:</strong> ${totals.missing}</p>
+            <p><strong>Already complete:</strong> ${totals.complete}</p>
+            <p><strong>Ready for migration:</strong> ${totals.ready}</p>
+            <p><strong>Need review:</strong> ${totals.review}</p>
+            <p><strong>Nothing was changed.</strong></p>
+          </div>
+
+          <div class="card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Handle</th>
+                  <th>Source</th>
+                  <th>Shopify</th>
+                  <th>Missing</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+          </div>
+        `
+      )
+    );
+  } catch (e) {
+    return res
+      .status(500)
+      .send(
+        page(
+          "Gallery dry run failed",
+          `
+            <h1>Gallery dry run failed</h1>
+            <div class="card">
+              <pre>${escapeHtml(String(e))}</pre>
+            </div>
+          `
+        )
+      );
+  }
+});
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`CHB Image Migration listening on port ${PORT}`);
 });
