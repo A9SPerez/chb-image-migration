@@ -693,7 +693,72 @@ app.post("/migrate-all", async (req, res) => {
     <a class="button secondary" href="/?shop=${encodeURIComponent(shop)}">Back</a>
   `));
 });
+app.get("/discover-godaddy", async (_req, res) => {
+  try {
+    const siteUrl = "https://callherbronzeada.com/";
 
+    const siteResponse = await fetch(siteUrl, {
+      redirect: "follow",
+      headers: {
+        "User-Agent": "Mozilla/5.0 CHB-Image-Migration/1.0",
+        "Accept": "text/html,*/*"
+      }
+    });
+
+    const html = await siteResponse.text();
+
+    const matches = [
+      ...html.matchAll(
+        /https?:\/\/[a-zA-Z0-9.-]+\.mysimplestore\.com/g
+      )
+    ].map((m) => m[0]);
+
+    const hosts = [...new Set(matches)];
+
+    const report = {
+      websiteStatus: siteResponse.status,
+      htmlLength: html.length,
+      mySimpleStoreHosts: hosts,
+      apiTests: []
+    };
+
+    for (const base of hosts) {
+      const apiUrl =
+        `${base}/api/v2/products` +
+        `?page_fallback=true&app=vnext&page=1&per_page=100`;
+
+      try {
+        const apiResponse = await fetch(apiUrl, {
+          headers: {
+            "User-Agent": "Mozilla/5.0 CHB-Image-Migration/1.0",
+            "Accept": "application/json,*/*"
+          }
+        });
+
+        const body = await apiResponse.text();
+
+        report.apiTests.push({
+          base,
+          status: apiResponse.status,
+          contentType:
+            apiResponse.headers.get("content-type"),
+          preview: body.slice(0, 15000)
+        });
+      } catch (e) {
+        report.apiTests.push({
+          base,
+          error: String(e)
+        });
+      }
+    }
+
+    res
+      .type("text/plain")
+      .send(JSON.stringify(report, null, 2));
+  } catch (e) {
+    res.status(500).type("text/plain").send(String(e));
+  }
+});
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`CHB Image Migration listening on port ${PORT}`);
 });
