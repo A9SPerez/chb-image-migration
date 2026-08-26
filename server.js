@@ -3792,6 +3792,319 @@ app.get("/validate-editorial-assets", async (_req, res) => {
       );
   }
 });
+app.get("/upload-editorial-assets", async (req, res) => {
+  try {
+    const shop = String(
+      req.query.shop || ALLOWED_SHOP || ""
+    ).toLowerCase();
+
+    if (!validShop(shop) || !tokens.has(shop)) {
+      return res
+        .status(401)
+        .send("Authorize Shopify first");
+    }
+
+    const existingData = await gql(
+      shop,
+      `
+        query ExistingFiles {
+          files(first: 250) {
+            nodes {
+              ... on MediaImage {
+                id
+                image {
+                  url
+                }
+                alt
+              }
+            }
+          }
+        }
+      `,
+      {}
+    );
+
+    const existing = new Set(
+      (existingData.files?.nodes || [])
+        .map(node => node?.image?.url || "")
+        .filter(Boolean)
+    );
+
+    const results = [];
+    let uploaded = 0;
+    let skipped = 0;
+    let failed = 0;
+
+    for (const asset of CHB_EDITORIAL_ASSETS) {
+      try {
+        const sourceResponse = await fetch(asset.url, {
+          method: "GET",
+          redirect: "follow",
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 CHB-Editorial-Migration/1.0",
+            "Accept": "image/*,*/*"
+          }
+        });
+
+        if (!sourceResponse.ok) {
+          throw new Error(
+            `Source HTTP ${sourceResponse.status}`
+          );
+        }
+
+        const arrayBuffer =
+          await sourceResponse.arrayBuffer();
+
+        const buffer =
+          Buffer.from(arrayBuffer);
+
+        const contentType =
+          sourceResponse.headers.get("content-type") ||
+          "application/octet-stream";
+
+        let extension = "";
+
+        try {
+          const pathname =
+            new URL(asset.url).pathname;
+
+          const match =
+            pathname.match(/\.([a-zA-Z0-9]+)$/);
+
+          extension =
+            match ? match[1].toLowerCase() : "";
+        } catch {}
+
+        if (!extension) {
+          extension = "jpg";
+        }
+
+        if (extension === "jfif") {
+          extension = "jpg";
+        }
+
+        const filename =
+          `chb-${asset.name}.${extension}`;
+
+        const stagedData = await gql(
+          shop,
+          `
+            mutation StageFile(
+              $input: [StagedUploadInput!]!
+            ) {
+              stagedUploadsCreate(input: $input) {
+                stagedTargets {
+                  url
+                  resourceUrl
+                  parameters {
+                    name
+                    value
+                  }
+                }
+                userErrors {
+                  field
+                  message
+                }
+              }
+            }
+          `,
+          {
+            input: [
+              {
+                filename,
+                mimeType:
+                  contentType === "application/octet-stream"
+                    ? "image/jpeg"
+                    : contentType,
+                resource: "IMAGE",
+                httpMethod: "POST"
+              }
+            ]
+          }
+        );
+
+        const stageErrors =
+          stagedData.stagedUploadsCreate?.userErrors || [];
+
+        if (stageErrors.length) {
+          throw new Error(
+            stageErrors
+              .map(e => e.message)
+              .join("; ")
+          );
+        }
+
+        const target =
+          stagedData.stagedUploadsCreate
+            ?.stagedTargets?.[0];
+
+        if (!target) {
+          throw new Error(
+            "No staged upload target returned"
+          );
+        }
+
+        const form = new FormData();
+
+        for (const parameter of target.parameters) {
+          form.append(
+            parameter.name,
+            parameter.value
+          );
+        }
+
+        form.append(
+          "file",
+          new Blob(
+            [buffer],
+            {
+              type:
+                contentType === "application/octet-stream"
+                  ? "image/jpeg"
+                  : contentType
+            }
+          ),
+          filename
+        );
+
+        const uploadResponse = await fetch(
+          target.url,
+          {
+            method: "POST",
+            body: form
+          }
+        );
+
+        if (!uploadResponse.ok) {
+          throw new Error(
+            `Staged upload HTTP ${uploadResponse.status}`
+          );
+        }
+
+        const createData = await gql(
+          shop,
+          `
+            mutation CreateFile(
+              $files: [FileCreateInput!]!
+            ) {
+              fileCreate(files: $files) {
+                files {
+                  id
+                  fileStatus
+                  alt
+                }
+                userErrors {
+                  field
+                  message
+                }
+              }
+            }
+          `,
+          {
+            files: [
+              {
+                alt:
+                  `Call Her Bronzeada ${asset.name}`,
+                contentType: "IMAGE",
+                originalSource:
+                  target.resourceUrl
+              }
+            ]
+          }
+        );
+
+        const createErrors =
+          createData.fileCreate?.userErrors || [];
+
+        if (createErrors.length) {
+          throw new Error(
+            createErrors
+              .map(e => e.message)
+              .join("; ")
+          );
+        }
+
+        uploaded++;
+
+        results.push({
+          name: asset.name,
+          status: "UPLOADED",
+          error: ""
+        });
+
+        await new Promise(
+          resolve => setTimeout(resolve, 400)
+        );
+      } catch (e) {
+        failed++;
+
+        results.push({
+          name: asset.name,
+          status: "FAILED",
+          error: String(e)
+        });
+      }
+    }
+
+    const rows = results
+      .map(
+        r => `
+          <tr>
+            <td>${escapeHtml(r.name)}</td>
+            <td>${escapeHtml(r.status)}</td>
+            <td>${escapeHtml(r.error || "")}</td>
+          </tr>
+        `
+      )
+      .join("");
+
+    return res.send(
+      page(
+        "Editorial asset upload",
+        `
+          <h1>Editorial asset upload</h1>
+
+          <div class="card">
+            <p><strong>Total assets:</strong> ${CHB_EDITORIAL_ASSETS.length}</p>
+            <p><strong>Uploaded:</strong> ${uploaded}</p>
+            <p><strong>Skipped:</strong> ${skipped}</p>
+            <p><strong>Failed:</strong> ${failed}</p>
+          </div>
+
+          <div class="card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Status</th>
+                  <th>Error</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+          </div>
+        `
+      )
+    );
+  } catch (e) {
+    return res
+      .status(500)
+      .send(
+        page(
+          "Editorial upload stopped",
+          `
+            <h1>Editorial upload stopped</h1>
+            <div class="card">
+              <pre>${escapeHtml(String(e))}</pre>
+            </div>
+          `
+        )
+      );
+  }
+});
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`CHB Image Migration listening on port ${PORT}`);
 });
