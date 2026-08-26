@@ -3155,7 +3155,308 @@ app.get("/migrate-berry-2", async (req, res) => {
       );
   }
 });
+const BUTTERFEELING_TARGETS = [
+  {
+    name: "Amarelo ButterFeeling™ CHB Pants",
+    handle: "xn-amarelo-butterfeeling-chb-pants-ti2t",
+    expectedCurrentShopify: 0,
+    urls: [
+      "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-09-30%20143911.png/:/rs=w:600,h:600",
+      "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-09-30%20143758.png/:/rs=w:600,h:600",
+      "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-09-30%20143449.png/:/rs=w:600,h:600",
+      "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/CHB%20-%20Pants.jpg/:/rs=w:600,h:600"
+    ]
+  },
 
+  {
+    name: "Preto ButterFeeling™ CHB Pants",
+    handle: "xn-preto-butterfeeling-chb-pants-ev8r",
+    expectedCurrentShopify: 0,
+    urls: [
+      "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-09-30%20144312.png/:/rs=w:600,h:600",
+      "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-09-30%20144123.png/:/rs=w:600,h:600",
+      "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-09-30%20144153.png/:/rs=w:600,h:600",
+      "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-09-30%20144234.png/:/rs=w:600,h:600",
+      "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/CHB%20-%20Pants.jpg/:/rs=w:600,h:600"
+    ]
+  },
+
+  {
+    name: "Bloom ButterFeeling™ CHB Pants",
+    handle: "xn-bloom-butterfeeling-chb-pants-ev8r",
+    expectedCurrentShopify: 0,
+    urls: [
+      "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-09-30%20144351.png/:/rs=w:600,h:600",
+      "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-09-30%20144424.png/:/rs=w:600,h:600",
+      "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-09-30%20144527.png/:/rs=w:600,h:600",
+      "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-09-30%20144624.png/:/rs=w:600,h:600",
+      "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-09-30%20144556.png/:/rs=w:600,h:600",
+      "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-09-30%20144459.png/:/rs=w:600,h:600",
+      "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/CHB%20-%20Pants.jpg/:/rs=w:600,h:600"
+    ]
+  },
+{
+  name: "Nua ButterFeeling™ CHB Pants",
+  handle: "xn-nua-butterfeeling-chb-pants-y74q",
+  expectedCurrentShopify: 1,
+  skipFirst: true,
+  urls: [
+    "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-09-30%20144018.png/:/rs=w:600,h:600",
+    "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-09-30%20143946.png/:/rs=w:600,h:600",
+    "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-09-30%20144048.png/:/rs=w:600,h:600",
+    "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/CHB%20-%20Pants.jpg/:/rs=w:600,h:600"
+  ]
+},
+
+{
+  name: "Lunar ButterFeeling™ CHB Pants",
+  handle: "xn-lunar-butterfeeling-chb-pants-ev8r",
+  expectedCurrentShopify: 0,
+  urls: [
+    "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/WhatsApp%20Image%202026-01-22%20at%2010.42.05%20AM%20(1).jpeg/:/rs=w:600,h:600",
+    "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/WhatsApp%20Image%202026-01-22%20at%2010.42.05%20AM%20(3).jpeg/:/rs=w:600,h:600",
+    "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/WhatsApp%20Image%202026-01-22%20at%2010.42.05%20AM.jpeg/:/rs=w:600,h:600",
+    "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/WhatsApp%20Image%202026-01-22%20at%2010.42.05%20AM%20(2).jpeg/:/rs=w:600,h:600",
+    "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/CHB%20-%20Pants.jpg/:/rs=w:600,h:600"
+  ]
+},
+
+{
+  name: "Royal ButterFeeling™ CHB Pants",
+  handle: "xn-royal-butterfeeling-chb-pants-ev8r",
+  expectedCurrentShopify: 0,
+  urls: [
+    "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/WhatsApp%20Image%202026-01-22%20at%2010.48.07%20AM.jpeg/:/rs=w:600,h:600",
+    "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/WhatsApp%20Image%202026-01-22%20at%2010.48.08%20AM%20(2).jpeg/:/rs=w:600,h:600",
+    "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/WhatsApp%20Image%202026-01-22%20at%2010.48.08%20AM.jpeg/:/rs=w:600,h:600",
+    "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/WhatsApp%20Image%202026-01-22%20at%2010.48.08%20AM%20(1).jpeg/:/rs=w:600,h:600",
+    "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/CHB%20-%20Pants.jpg/:/rs=w:600,h:600"
+  ]
+}
+];
+app.get("/migrate-butterfeeling-29", async (req, res) => {
+  try {
+    const shop = String(
+      req.query.shop || ALLOWED_SHOP || ""
+    ).toLowerCase();
+
+    if (!validShop(shop) || !tokens.has(shop)) {
+      return res
+        .status(401)
+        .send("Authorize Shopify first");
+    }
+
+    const prepared = [];
+
+    // SAFETY CHECK:
+    // verify every Shopify product before uploading anything.
+    for (const target of BUTTERFEELING_TARGETS) {
+      const shopifyData = await gql(
+        shop,
+        `
+          query ButterFeelingProduct($handle: String!) {
+            productByHandle(handle: $handle) {
+              id
+              title
+              handle
+              media(first: 50) {
+                nodes {
+                  id
+                  status
+                  mediaContentType
+                }
+              }
+            }
+          }
+        `,
+        {
+          handle: target.handle
+        }
+      );
+
+      const product =
+        shopifyData.productByHandle;
+
+      if (!product) {
+        throw new Error(
+          `${target.name}: product not found in Shopify`
+        );
+      }
+
+      const validMedia =
+        (product.media?.nodes || [])
+          .filter(
+            (media) =>
+              media.status !== "FAILED"
+          );
+
+      if (
+        validMedia.length !==
+        target.expectedCurrentShopify
+      ) {
+        throw new Error(
+          `${target.name}: safety stop — expected ` +
+          `${target.expectedCurrentShopify} current Shopify images, ` +
+          `found ${validMedia.length}`
+        );
+      }
+
+      const selectedUrls =
+        target.skipFirst
+          ? target.urls.slice(1)
+          : target.urls;
+
+      prepared.push({
+        ...target,
+        product,
+        selectedUrls
+      });
+    }
+
+    const expectedTotal =
+      prepared.reduce(
+        (sum, target) =>
+          sum + target.selectedUrls.length,
+        0
+      );
+
+    if (expectedTotal !== 29) {
+      throw new Error(
+        `Global safety stop — expected 29 images, calculated ${expectedTotal}`
+      );
+    }
+
+    const results = [];
+    let totalSubmitted = 0;
+    let stopped = false;
+
+    for (const target of prepared) {
+      let submitted = 0;
+      let error = "";
+
+      for (
+        let index = 0;
+        index < target.selectedUrls.length;
+        index++
+      ) {
+        try {
+          const image = {
+            position:
+              target.skipFirst
+                ? index + 2
+                : index + 1,
+            sourceUrl:
+              target.selectedUrls[index],
+            productName:
+              target.name,
+            handle:
+              target.handle
+          };
+
+          await addImage(
+            shop,
+            target.product,
+            image
+          );
+
+          submitted++;
+          totalSubmitted++;
+
+          await new Promise(
+            (resolve) =>
+              setTimeout(resolve, 600)
+          );
+        } catch (e) {
+          error = String(e);
+          stopped = true;
+          break;
+        }
+      }
+
+      results.push({
+        name: target.name,
+        expected:
+          target.selectedUrls.length,
+        submitted,
+        status:
+          error
+            ? "ERROR"
+            : "SUBMITTED",
+        error
+      });
+
+      if (stopped) {
+        break;
+      }
+    }
+
+    const rows = results
+      .map(
+        (r) => `
+          <tr>
+            <td>${escapeHtml(r.name)}</td>
+            <td>${r.expected}</td>
+            <td>${r.submitted}</td>
+            <td>${escapeHtml(r.status)}</td>
+            <td>${escapeHtml(r.error || "")}</td>
+          </tr>
+        `
+      )
+      .join("");
+
+    return res.send(
+      page(
+        "ButterFeeling migration",
+        `
+          <h1>ButterFeeling migration</h1>
+
+          <div class="card">
+            <p><strong>Products:</strong> 6</p>
+            <p><strong>Expected images:</strong> 29</p>
+            <p><strong>Submitted:</strong> ${totalSubmitted}</p>
+            <p>
+              <strong>Stopped on error:</strong>
+              ${stopped ? "YES" : "NO"}
+            </p>
+          </div>
+
+          <div class="card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Expected</th>
+                  <th>Submitted</th>
+                  <th>Status</th>
+                  <th>Error</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+          </div>
+        `
+      )
+    );
+  } catch (e) {
+    return res
+      .status(500)
+      .send(
+        page(
+          "ButterFeeling migration stopped",
+          `
+            <h1>ButterFeeling migration stopped</h1>
+
+            <div class="card">
+              <pre>${escapeHtml(String(e))}</pre>
+            </div>
+          `
+        )
+      );
+  }
+});
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`CHB Image Migration listening on port ${PORT}`);
 });
