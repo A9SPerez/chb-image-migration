@@ -3457,6 +3457,341 @@ app.get("/migrate-butterfeeling-29", async (req, res) => {
       );
   }
 });
+const CHB_EDITORIAL_ASSETS = [
+  {
+    name: "editorial-01",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/Facetune_12-08-2026-14-14-21-6ccac36.jpeg"
+  },
+  {
+    name: "brand-chb",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/thumbnail_call%20her.png"
+  },
+  {
+    name: "editorial-03",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/WhatsApp%20Image%202026-08-19%20at%2011.22.06%20AM.jpeg"
+  },
+  {
+    name: "editorial-04",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/Facetune_12-08-2026-14-17-16.jpeg"
+  },
+  {
+    name: "editorial-05",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/f6abd538-10a6-437c-ab89-f4847185e741.jpg"
+  },
+  {
+    name: "editorial-06",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/84a33de4-e4fe-4330-a309-da2ced4de126.jpg"
+  },
+  {
+    name: "editorial-07",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/2b23b71f-772a-4ca6-a16e-5c867182a1e6%20(1).jpg"
+  },
+  {
+    name: "editorial-08",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_8724.jpeg"
+  },
+  {
+    name: "editorial-09",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_8687.jpeg"
+  },
+  {
+    name: "editorial-10",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_8708.jpeg"
+  },
+  {
+    name: "editorial-11",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_8711.jpeg"
+  },
+  {
+    name: "editorial-12",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_8716.jpeg"
+  },
+    {
+    name: "editorial-13",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_8719.jpeg"
+  },
+  {
+    name: "editorial-14",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_8726.jpeg"
+  },
+  {
+    name: "editorial-15",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_2766.jpeg"
+  },
+  {
+    name: "editorial-16",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_2779.jpeg"
+  },
+  {
+    name: "editorial-17",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_2783.jpeg"
+  },
+  {
+    name: "editorial-18",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Julia3276.jpg"
+  },
+  {
+    name: "editorial-19",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/blob-4d9a20e.png"
+  },
+  {
+    name: "editorial-20",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/WhatsApp%20Image%202026-06-01%20at%2012.10.52%20PM.jpeg"
+  },
+  {
+    name: "editorial-21",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/thumbnail_IMG_1464.jpg"
+  },
+  {
+    name: "editorial-22",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/blob-82d3acb.png"
+  },
+  {
+    name: "editorial-23",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/blob-c9c572b.png"
+  },
+  {
+    name: "editorial-24",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_5179.jpg"
+  },
+    {
+    name: "editorial-25",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/3.png"
+  },
+  {
+    name: "editorial-26",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/D0d747fQ.jpeg"
+  },
+  {
+    name: "editorial-27",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/PlAPF_lg.jpeg"
+  },
+  {
+    name: "editorial-28",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/FFGYpGAQ.jpeg"
+  },
+  {
+    name: "editorial-29",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/6KPpYZtg.jpeg"
+  },
+  {
+    name: "editorial-30",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/oHnsUhZw.jpeg"
+  },
+  {
+    name: "editorial-31",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/9471ADA2-8A5B-4998-9391-D653743CB787.png"
+  },
+  {
+    name: "editorial-32",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_9017.jpeg"
+  },
+  {
+    name: "editorial-33",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Screenshot%202025-10-24%20092558.jpg"
+  },
+  {
+    name: "editorial-34",
+    url: "https://img1.wsimg.com/blobby/go/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/86585f8d-f4de-431a-9fb8-850bd5847f92.jfif"
+  },
+  {
+    name: "editorial-35",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Photo%20Dec%2017%202024%2C%209%2016%2014%20PM.jpg"
+  },
+  {
+    name: "editorial-36",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Facetune_14-06-2025-09-27-01.jpeg"
+  },
+    {
+    name: "editorial-37",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_4270.jpeg"
+  },
+  {
+    name: "editorial-38",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Photo%20Dec%2017%202024%2C%209%2009%2004%20PM.jpg"
+  },
+  {
+    name: "editorial-39",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Photo%20Dec%2017%202024%2C%208%2029%2010%20PM.jpg"
+  },
+  {
+    name: "editorial-40",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Photo%20Dec%2017%202024%2C%208%2038%2031%20PM.jpg"
+  },
+  {
+    name: "editorial-41",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/Photo%20Dec%2017%202024%2C%209%2006%2003%20PM.jpg"
+  },
+  {
+    name: "editorial-42",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/blob-87aba66.png"
+  },
+  {
+    name: "editorial-43",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_4431.jpeg"
+  },
+  {
+    name: "editorial-44",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_4310.jpeg"
+  },
+  {
+    name: "editorial-45",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_4302.jpeg"
+  },
+  {
+    name: "editorial-46",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_4412.jpeg"
+  },
+  {
+    name: "editorial-47",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_4407.jpeg"
+  },
+  {
+    name: "editorial-48",
+    url: "https://img1.wsimg.com/isteam/ip/b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe/ols/IMG_4335.jpeg"
+  }
+];
+app.get("/validate-editorial-assets", async (_req, res) => {
+  try {
+    const seen = new Set();
+    const results = [];
+
+    for (const asset of CHB_EDITORIAL_ASSETS) {
+      const duplicate =
+        seen.has(asset.url);
+
+      seen.add(asset.url);
+
+      try {
+        const response = await fetch(asset.url, {
+          method: "HEAD",
+          redirect: "follow",
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 CHB-Image-Migration/1.0",
+            "Accept": "image/*,*/*"
+          }
+        });
+
+        const contentType =
+          response.headers.get("content-type") || "";
+
+        const contentLength =
+          response.headers.get("content-length") || "";
+
+        results.push({
+          name: asset.name,
+          url: asset.url,
+          status: response.status,
+          ok: response.ok,
+          contentType,
+          contentLength,
+          duplicate
+        });
+      } catch (e) {
+        results.push({
+          name: asset.name,
+          url: asset.url,
+          status: "",
+          ok: false,
+          contentType: "",
+          contentLength: "",
+          duplicate,
+          error: String(e)
+        });
+      }
+
+      await new Promise(
+        (resolve) =>
+          setTimeout(resolve, 120)
+      );
+    }
+
+    const valid =
+      results.filter(
+        (r) =>
+          r.ok &&
+          r.contentType.startsWith("image/") &&
+          !r.duplicate
+      ).length;
+
+    const invalid =
+      results.filter(
+        (r) =>
+          !r.ok ||
+          !r.contentType.startsWith("image/")
+      ).length;
+
+    const duplicates =
+      results.filter(
+        (r) => r.duplicate
+      ).length;
+
+    const rows = results
+      .map(
+        (r) => `
+          <tr>
+            <td>${escapeHtml(r.name)}</td>
+            <td>${escapeHtml(r.status)}</td>
+            <td>${escapeHtml(r.contentType)}</td>
+            <td>${escapeHtml(r.contentLength)}</td>
+            <td>${r.duplicate ? "YES" : ""}</td>
+            <td>${escapeHtml(r.error || "")}</td>
+          </tr>
+        `
+      )
+      .join("");
+
+    return res.send(
+      page(
+        "Editorial asset validation",
+        `
+          <h1>Editorial asset validation</h1>
+
+          <div class="card">
+            <p><strong>Total:</strong> ${results.length}</p>
+            <p><strong>Valid unique images:</strong> ${valid}</p>
+            <p><strong>Invalid:</strong> ${invalid}</p>
+            <p><strong>Duplicate URLs:</strong> ${duplicates}</p>
+            <p><strong>Nothing was uploaded.</strong></p>
+          </div>
+
+          <div class="card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Status</th>
+                  <th>Content type</th>
+                  <th>Bytes</th>
+                  <th>Duplicate</th>
+                  <th>Error</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+          </div>
+        `
+      )
+    );
+  } catch (e) {
+    return res
+      .status(500)
+      .send(
+        page(
+          "Validation failed",
+          `
+            <h1>Validation failed</h1>
+            <div class="card">
+              <pre>${escapeHtml(String(e))}</pre>
+            </div>
+          `
+        )
+      );
+  }
+});
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`CHB Image Migration listening on port ${PORT}`);
 });
