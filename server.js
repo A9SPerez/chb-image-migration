@@ -3804,33 +3804,7 @@ app.get("/upload-editorial-assets", async (req, res) => {
         .send("Authorize Shopify first");
     }
 
-    const existingData = await gql(
-      shop,
-      `
-        query ExistingFiles {
-          files(first: 250) {
-            nodes {
-              ... on MediaImage {
-                id
-                image {
-                  url
-                }
-                alt
-              }
-            }
-          }
-        }
-      `,
-      {}
-    );
-
-    const existing = new Set(
-      (existingData.files?.nodes || [])
-        .map(node => node?.image?.url || "")
-        .filter(Boolean)
-    );
-
-    const results = [];
+      const results = [];
     let uploaded = 0;
     let skipped = 0;
     let failed = 0;
