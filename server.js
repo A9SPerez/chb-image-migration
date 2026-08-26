@@ -2400,7 +2400,23 @@ app.get("/marine-diagnostic", async (req, res) => {
         .send("Authorize Shopify first");
     }
 
-    const handle = "marine-set";
+    const allowedHandles = new Set([
+  "marine-set",
+  "skyfall-set",
+  "rosa-neon-delta-set",
+  "pre-order-divine-grace-hand-chain",
+  "casa-lunar-set"
+]);
+
+const handle = String(
+  req.query.handle || "marine-set"
+).toLowerCase();
+
+if (!allowedHandles.has(handle)) {
+  return res
+    .status(400)
+    .send("Product handle not allowed");
+}
 
     const godaddyUrl =
       "https://b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe.mysimplestore.com" +
