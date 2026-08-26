@@ -2018,6 +2018,362 @@ app.get("/gallery-migrate-zero-batch", async (req, res) => {
       );
   }
 });
+app.get("/gallery-partial-dry-run", async (req, res) => {
+  try {
+    const shop = String(
+      req.query.shop || ALLOWED_SHOP || ""
+    ).toLowerCase();
+
+    if (!validShop(shop) || !tokens.has(shop)) {
+      return res
+        .status(401)
+        .send("Authorize Shopify first");
+    }
+
+    const GODADDY_BASE =
+      "https://b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe.mysimplestore.com";
+
+    const targets = [
+      {
+        name: "Marine Set",
+        handle: "marine-set"
+      },
+      {
+        name: "Skyfall Set",
+        handle: "skyfall-set"
+      },
+      {
+        name: "Rosa Neon Delta Set",
+        handle: "rosa-neon-delta-set"
+      },
+      {
+        name: "PRE-ORDER Oceanos Set",
+        handle: "pre-order-oceanos-set"
+      },
+      {
+        name: "BERRY",
+        handle: "lover-berry-set"
+      },
+      {
+        name: "Mocha Set",
+        handle: "mocha-set"
+      },
+      {
+        name: "Pre-Order Divine Grace Hand Chain",
+        handle: "pre-order-divine-grace-hand-chain"
+      },
+      {
+        name: "Casa Lunar Set",
+        handle: "casa-lunar-set"
+      }
+    ];
+
+    const results = [];
+
+    for (const target of targets) {
+      try {
+        const sourceUrl =
+          `${GODADDY_BASE}/api/v2/products/` +
+          `${encodeURIComponent(target.handle)}?app=vnext`;
+
+        const sourceResponse = await fetch(sourceUrl, {
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 CHB-Image-Migration/1.0",
+            "Accept": "application/json"
+          }
+        });
+
+        if (!sourceResponse.ok) {
+          results.push({
+            name: target.name,
+            handle: target.handle,
+            sourceCount: "",
+            shopifyCount: "",
+            missingCount: "",
+            missingFiles: [],
+            status:
+              `SOURCE_API_${sourceResponse.status}`
+          });
+
+          continue;
+        }
+
+        const sourceProduct =
+          await sourceResponse.json();
+
+        const sourceImages =
+          (sourceProduct.assets || [])
+            .filter(
+              (asset) =>
+                asset &&
+                asset.type === "image" &&
+                asset.original_url
+            )
+            .map((asset, index) => {
+              const cleanUrl =
+                String(asset.original_url)
+                  .split("/:/rs=")[0];
+
+              return {
+                position: index + 1,
+                url: cleanUrl,
+                filename:
+                  filenameFromUrl(
+                    cleanUrl,
+                    `image-${index + 1}`
+                  )
+                    .toLowerCase()
+              };
+            });
+
+        const shopifyData = await gql(
+          shop,
+          `
+            query PartialGalleryProduct($handle: String!) {
+              productByHandle(handle: $handle) {
+                id
+                title
+                handle
+                media(first: 50) {
+                  nodes {
+                    id
+                    status
+                    mediaContentType
+                    ... on MediaImage {
+                      image {
+                        url
+                        altText
+                        width
+                        height
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          `,
+          {
+            handle: target.handle
+          }
+        );
+
+        const product =
+          shopifyData.productByHandle;
+
+        if (!product) {
+          results.push({
+            name: target.name,
+            handle: target.handle,
+            sourceCount:
+              sourceImages.length,
+            shopifyCount: "",
+            missingCount: "",
+            missingFiles: [],
+            status: "NOT_FOUND_IN_SHOPIFY"
+          });
+
+          continue;
+        }
+
+        const shopifyImages =
+          (product.media?.nodes || [])
+            .filter(
+              (media) =>
+                media.status !== "FAILED" &&
+                media.mediaContentType === "IMAGE" &&
+                media.image?.url
+            )
+            .map((media) => ({
+              url: media.image.url,
+              filename:
+                filenameFromUrl(
+                  media.image.url,
+                  ""
+                )
+                  .toLowerCase()
+            }));
+
+        const shopifyFilenames =
+          new Set(
+            shopifyImages
+              .map((image) => image.filename)
+              .filter(Boolean)
+          );
+
+        const missingImages =
+          sourceImages.filter(
+            (image) =>
+              !shopifyFilenames.has(
+                image.filename
+              )
+          );
+
+        results.push({
+          name:
+            sourceProduct.name ||
+            target.name,
+          handle: target.handle,
+          sourceCount:
+            sourceImages.length,
+          shopifyCount:
+            shopifyImages.length,
+          missingCount:
+            missingImages.length,
+          missingFiles:
+            missingImages.map(
+              (image) =>
+                `${image.position}. ${image.filename}`
+            ),
+          status:
+            missingImages.length === 0
+              ? "COMPLETE"
+              : "READY"
+        });
+
+        await new Promise(
+          (resolve) =>
+            setTimeout(resolve, 150)
+        );
+      } catch (e) {
+        results.push({
+          name: target.name,
+          handle: target.handle,
+          sourceCount: "",
+          shopifyCount: "",
+          missingCount: "",
+          missingFiles: [],
+          status:
+            `ERROR: ${String(e)}`
+        });
+      }
+    }
+
+    const totals = results.reduce(
+      (acc, row) => {
+        acc.products++;
+
+        if (
+          typeof row.sourceCount === "number"
+        ) {
+          acc.source += row.sourceCount;
+        }
+
+        if (
+          typeof row.shopifyCount === "number"
+        ) {
+          acc.shopify += row.shopifyCount;
+        }
+
+        if (
+          typeof row.missingCount === "number"
+        ) {
+          acc.missing += row.missingCount;
+        }
+
+        return acc;
+      },
+      {
+        products: 0,
+        source: 0,
+        shopify: 0,
+        missing: 0
+      }
+    );
+
+    const rows = results
+      .map(
+        (r) => `
+          <tr>
+            <td>${escapeHtml(r.name)}</td>
+            <td>
+              <code>${escapeHtml(r.handle)}</code>
+            </td>
+            <td>${escapeHtml(r.sourceCount)}</td>
+            <td>${escapeHtml(r.shopifyCount)}</td>
+            <td>${escapeHtml(r.missingCount)}</td>
+            <td>${escapeHtml(r.status)}</td>
+            <td>
+              ${escapeHtml(
+                (r.missingFiles || []).join(", ")
+              )}
+            </td>
+          </tr>
+        `
+      )
+      .join("");
+
+    return res.send(
+      page(
+        "Partial gallery dry run",
+        `
+          <h1>Partial gallery dry run</h1>
+
+          <div class="card">
+            <p>
+              <strong>Products checked:</strong>
+              ${totals.products}
+            </p>
+
+            <p>
+              <strong>Source images:</strong>
+              ${totals.source}
+            </p>
+
+            <p>
+              <strong>Current Shopify images:</strong>
+              ${totals.shopify}
+            </p>
+
+            <p>
+              <strong>Images identified as missing:</strong>
+              ${totals.missing}
+            </p>
+
+            <p>
+              <strong>Nothing was changed.</strong>
+            </p>
+          </div>
+
+          <div class="card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Handle</th>
+                  <th>Source</th>
+                  <th>Shopify</th>
+                  <th>Missing</th>
+                  <th>Status</th>
+                  <th>Missing files</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+          </div>
+        `
+      )
+    );
+  } catch (e) {
+    return res
+      .status(500)
+      .send(
+        page(
+          "Partial gallery dry run failed",
+          `
+            <h1>Partial gallery dry run failed</h1>
+
+            <div class="card">
+              <pre>${escapeHtml(String(e))}</pre>
+            </div>
+          `
+        )
+      );
+  }
+});            
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`CHB Image Migration listening on port ${PORT}`);
 });
