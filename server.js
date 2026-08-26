@@ -2939,6 +2939,221 @@ app.get("/migrate-final-28", async (req, res) => {
       );
   }
 });
+
+app.get("/migrate-berry-2", async (req, res) => {
+  try {
+    const shop = String(
+      req.query.shop || ALLOWED_SHOP || ""
+    ).toLowerCase();
+
+    if (!validShop(shop) || !tokens.has(shop)) {
+      return res
+        .status(401)
+        .send("Authorize Shopify first");
+    }
+
+    const handle = "lover-berry-set";
+    const productName = "BERRY";
+
+    const godaddyUrl =
+      "https://b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe.mysimplestore.com" +
+      "/api/v2/products/" +
+      encodeURIComponent(handle) +
+      "?app=vnext";
+
+    const sourceResponse = await fetch(godaddyUrl, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 CHB-Image-Migration/1.0",
+        "Accept": "application/json"
+      }
+    });
+
+    if (!sourceResponse.ok) {
+      throw new Error(
+        `BERRY source API failed: ${sourceResponse.status}`
+      );
+    }
+
+    const sourceProduct =
+      await sourceResponse.json();
+
+    const sourceImages =
+      (sourceProduct.assets || [])
+        .filter(
+          (asset) =>
+            asset &&
+            asset.type === "image" &&
+            asset.original_url
+        )
+        .map((asset, index) => ({
+          position: index + 1,
+          sourceUrl: String(
+            asset.original_url
+          ).split("/:/rs=")[0],
+          productName,
+          handle
+        }));
+
+    if (sourceImages.length !== 3) {
+      throw new Error(
+        `Safety stop: expected 3 BERRY source images, found ${sourceImages.length}`
+      );
+    }
+
+    const shopifyData = await gql(
+      shop,
+      `
+        query BerryMigrationProduct($handle: String!) {
+          productByHandle(handle: $handle) {
+            id
+            title
+            handle
+            media(first: 20) {
+              nodes {
+                id
+                status
+                mediaContentType
+              }
+            }
+          }
+        }
+      `,
+      {
+        handle
+      }
+    );
+
+    const shopifyProduct =
+      shopifyData.productByHandle;
+
+    if (!shopifyProduct) {
+      throw new Error(
+        "BERRY not found in Shopify"
+      );
+    }
+
+    const validMedia =
+      (shopifyProduct.media?.nodes || [])
+        .filter(
+          (media) =>
+            media.status !== "FAILED"
+        );
+
+    if (validMedia.length !== 1) {
+      throw new Error(
+        `Safety stop: expected 1 current BERRY Shopify image, found ${validMedia.length}`
+      );
+    }
+
+    const imagesToAdd =
+      sourceImages.slice(1);
+
+    if (imagesToAdd.length !== 2) {
+      throw new Error(
+        `Safety stop: expected exactly 2 images to add, found ${imagesToAdd.length}`
+      );
+    }
+
+    const results = [];
+
+    for (const image of imagesToAdd) {
+      try {
+        await addImage(
+          shop,
+          shopifyProduct,
+          image
+        );
+
+        results.push({
+          position: image.position,
+          status: "SUBMITTED"
+        });
+
+        await new Promise(
+          (resolve) =>
+            setTimeout(resolve, 600)
+        );
+      } catch (e) {
+        results.push({
+          position: image.position,
+          status: "ERROR",
+          error: String(e)
+        });
+
+        break;
+      }
+    }
+
+    const submitted =
+      results.filter(
+        (r) => r.status === "SUBMITTED"
+      ).length;
+
+    const errors =
+      results.filter(
+        (r) => r.status === "ERROR"
+      ).length;
+
+    const rows = results
+      .map(
+        (r) => `
+          <tr>
+            <td>${r.position}</td>
+            <td>${escapeHtml(r.status)}</td>
+            <td>${escapeHtml(r.error || "")}</td>
+          </tr>
+        `
+      )
+      .join("");
+
+    return res.send(
+      page(
+        "BERRY final migration",
+        `
+          <h1>BERRY final migration</h1>
+
+          <div class="card">
+            <p><strong>Source images:</strong> 3</p>
+            <p><strong>Already in Shopify:</strong> 1</p>
+            <p><strong>Submitted now:</strong> ${submitted}</p>
+            <p><strong>Errors:</strong> ${errors}</p>
+          </div>
+
+          <div class="card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Position</th>
+                  <th>Status</th>
+                  <th>Error</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+          </div>
+        `
+      )
+    );
+  } catch (e) {
+    return res
+      .status(500)
+      .send(
+        page(
+          "BERRY migration stopped",
+          `
+            <h1>BERRY migration stopped</h1>
+            <div class="card">
+              <pre>${escapeHtml(String(e))}</pre>
+            </div>
+          `
+        )
+      );
+  }
+});
+
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`CHB Image Migration listening on port ${PORT}`);
 });
