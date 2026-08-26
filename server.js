@@ -2423,13 +2423,14 @@ app.get("/marine-diagnostic", async (req, res) => {
         .send("Authorize Shopify first");
     }
 
-    const allowedHandles = new Set([
+   const allowedHandles = new Set([
   "marine-set",
   "skyfall-set",
   "rosa-neon-delta-set",
   "pre-order-divine-grace-hand-chain",
   "casa-lunar-set",
-  "lover-berry-set"
+  "lover-berry-set",
+  "bloom-set"
 ]);
 
 const handle = String(
