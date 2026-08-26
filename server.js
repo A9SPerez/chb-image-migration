@@ -2640,6 +2640,281 @@ if (!allowedHandles.has(handle)) {
       );
   }
 });
+app.get("/migrate-final-28", async (req, res) => {
+  try {
+    const shop = String(
+      req.query.shop || ALLOWED_SHOP || ""
+    ).toLowerCase();
+
+    if (!validShop(shop) || !tokens.has(shop)) {
+      return res
+        .status(401)
+        .send("Authorize Shopify first");
+    }
+
+    const GODADDY_BASE =
+      "https://b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe.mysimplestore.com";
+
+    const targets = [
+      {
+        name: "Marine Set",
+        handle: "marine-set",
+        expectedSource: 6
+      },
+      {
+        name: "Skyfall Set",
+        handle: "skyfall-set",
+        expectedSource: 5
+      },
+      {
+        name: "Rosa Neon Delta Set",
+        handle: "rosa-neon-delta-set",
+        expectedSource: 7
+      },
+      {
+        name: "Pre-Order Divine Grace Hand Chain",
+        handle: "pre-order-divine-grace-hand-chain",
+        expectedSource: 3
+      },
+      {
+        name: "Casa Lunar Set",
+        handle: "casa-lunar-set",
+        expectedSource: 12
+      }
+    ];
+
+    const prepared = [];
+
+    // PRE-FLIGHT: verify everything before changing anything.
+    for (const target of targets) {
+      const sourceUrl =
+        `${GODADDY_BASE}/api/v2/products/` +
+        `${encodeURIComponent(target.handle)}?app=vnext`;
+
+      const sourceResponse = await fetch(sourceUrl, {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 CHB-Image-Migration/1.0",
+          "Accept": "application/json"
+        }
+      });
+
+      if (!sourceResponse.ok) {
+        throw new Error(
+          `${target.name}: source API returned ${sourceResponse.status}`
+        );
+      }
+
+      const sourceProduct =
+        await sourceResponse.json();
+
+      const sourceImages =
+        (sourceProduct.assets || [])
+          .filter(
+            (asset) =>
+              asset &&
+              asset.type === "image" &&
+              asset.original_url
+          )
+          .map((asset, index) => ({
+            position: index + 1,
+            sourceUrl: String(
+              asset.original_url
+            ).split("/:/rs=")[0],
+            productName:
+              sourceProduct.name ||
+              target.name,
+            handle: target.handle
+          }));
+
+      if (
+        sourceImages.length !==
+        target.expectedSource
+      ) {
+        throw new Error(
+          `${target.name}: safety stop — expected ` +
+          `${target.expectedSource} source images, found ` +
+          `${sourceImages.length}`
+        );
+      }
+
+      const shopifyProduct =
+        await getProduct(
+          shop,
+          target.handle
+        );
+
+      if (!shopifyProduct) {
+        throw new Error(
+          `${target.name}: product not found in Shopify`
+        );
+      }
+
+      const validMedia =
+        (shopifyProduct.media?.nodes || [])
+          .filter(
+            (media) =>
+              media.status !== "FAILED"
+          );
+
+      if (validMedia.length !== 1) {
+        throw new Error(
+          `${target.name}: safety stop — expected ` +
+          `1 current Shopify image, found ` +
+          `${validMedia.length}`
+        );
+      }
+
+      prepared.push({
+        ...target,
+        shopifyProduct,
+        imagesToAdd:
+          sourceImages.slice(1)
+      });
+    }
+
+    const expectedToAdd =
+      prepared.reduce(
+        (sum, product) =>
+          sum + product.imagesToAdd.length,
+        0
+      );
+
+    if (expectedToAdd !== 28) {
+      throw new Error(
+        `Global safety stop — expected 28 images ` +
+        `to add, calculated ${expectedToAdd}`
+      );
+    }
+
+    const results = [];
+    let totalSubmitted = 0;
+    let stopped = false;
+
+    for (const product of prepared) {
+      let submitted = 0;
+      let error = "";
+
+      for (const image of product.imagesToAdd) {
+        try {
+          console.log(
+            `Final 28 migration: ${product.name} ` +
+            `image ${image.position}/${product.expectedSource}`
+          );
+
+          await addImage(
+            shop,
+            product.shopifyProduct,
+            image
+          );
+
+          submitted++;
+          totalSubmitted++;
+
+          await new Promise(
+            (resolve) =>
+              setTimeout(resolve, 600)
+          );
+        } catch (e) {
+          error = String(e);
+          stopped = true;
+          break;
+        }
+      }
+
+      results.push({
+        name: product.name,
+        expected:
+          product.imagesToAdd.length,
+        submitted,
+        status:
+          error
+            ? "ERROR"
+            : "SUBMITTED",
+        error
+      });
+
+      if (stopped) {
+        break;
+      }
+    }
+
+    const rows = results
+      .map(
+        (r) => `
+          <tr>
+            <td>${escapeHtml(r.name)}</td>
+            <td>${r.expected}</td>
+            <td>${r.submitted}</td>
+            <td>${escapeHtml(r.status)}</td>
+            <td>${escapeHtml(r.error || "")}</td>
+          </tr>
+        `
+      )
+      .join("");
+
+    return res.send(
+      page(
+        "Final 28 gallery migration",
+        `
+          <h1>Final 28 gallery migration</h1>
+
+          <div class="card">
+            <p>
+              <strong>Products:</strong> 5
+            </p>
+
+            <p>
+              <strong>Expected images:</strong> 28
+            </p>
+
+            <p>
+              <strong>Submitted:</strong>
+              ${totalSubmitted}
+            </p>
+
+            <p>
+              <strong>Stopped on error:</strong>
+              ${stopped ? "YES" : "NO"}
+            </p>
+          </div>
+
+          <div class="card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Expected</th>
+                  <th>Submitted</th>
+                  <th>Status</th>
+                  <th>Error</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+          </div>
+        `
+      )
+    );
+  } catch (e) {
+    return res
+      .status(500)
+      .send(
+        page(
+          "Final migration stopped",
+          `
+            <h1>Final migration stopped</h1>
+
+            <div class="card">
+              <pre>${escapeHtml(String(e))}</pre>
+            </div>
+          `
+        )
+      );
+  }
+});
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`CHB Image Migration listening on port ${PORT}`);
 });
