@@ -1534,8 +1534,31 @@ app.get("/gallery-dry-run-all", async (req, res) => {
               asset.original_url
           );
 
-        const shopifyProduct =
-          await getProduct(shop, item.handle);
+        const shopifyData = await gql(
+  shop,
+  `
+    query GalleryDryRunProduct($handle: String!) {
+      productByHandle(handle: $handle) {
+        id
+        title
+        handle
+        media(first: 100) {
+          nodes {
+            id
+            status
+            mediaContentType
+          }
+        }
+      }
+    }
+  `,
+  {
+    handle: item.handle
+  }
+);
+
+const shopifyProduct =
+  shopifyData.productByHandle;
 
         if (!shopifyProduct) {
           results.push({
