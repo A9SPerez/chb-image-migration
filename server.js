@@ -13,7 +13,7 @@ const CLIENT_ID = process.env.SHOPIFY_CLIENT_ID;
 const CLIENT_SECRET = process.env.SHOPIFY_CLIENT_SECRET;
 const APP_URL = (process.env.APP_URL || "").replace(/\/$/, "");
 const API_VERSION = process.env.SHOPIFY_API_VERSION || "2026-07";
-const SCOPES = process.env.SHOPIFY_SCOPES || "read_products,write_products";
+const SCOPES = process.env.SHOPIFY_SCOPES || "read_products,write_products,write_files";
 const ALLOWED_SHOP = (process.env.ALLOWED_SHOP || "").toLowerCase();
 
 if (!CLIENT_ID || !CLIENT_SECRET || !APP_URL) {
