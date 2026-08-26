@@ -2115,16 +2115,18 @@ app.get("/gallery-partial-dry-run", async (req, res) => {
                 String(asset.original_url)
                   .split("/:/rs=")[0];
 
-              return {
-                position: index + 1,
-                url: cleanUrl,
-                filename:
-                  filenameFromUrl(
-                    cleanUrl,
-                    `image-${index + 1}`
-                  )
-                    .toLowerCase()
-              };
+             return {
+  position: index + 1,
+  url: cleanUrl,
+  width: Number(asset.attachment_width || 0),
+  height: Number(asset.attachment_height || 0),
+  filename:
+    filenameFromUrl(
+      cleanUrl,
+      `image-${index + 1}`
+    )
+      .toLowerCase()
+};
             });
 
         const shopifyData = await gql(
@@ -2177,37 +2179,49 @@ app.get("/gallery-partial-dry-run", async (req, res) => {
         }
 
         const shopifyImages =
-          (product.media?.nodes || [])
-            .filter(
-              (media) =>
-                media.status !== "FAILED" &&
-                media.mediaContentType === "IMAGE" &&
-                media.image?.url
-            )
-            .map((media) => ({
-              url: media.image.url,
-              filename:
-                filenameFromUrl(
-                  media.image.url,
-                  ""
-                )
-                  .toLowerCase()
-            }));
+  (product.media?.nodes || [])
+    .filter(
+      (media) =>
+        media.status !== "FAILED" &&
+        media.mediaContentType === "IMAGE" &&
+        media.image?.url
+    )
+    .map((media) => ({
+      url: media.image.url,
+      width: Number(media.image.width || 0),
+      height: Number(media.image.height || 0)
+    }));
 
-        const shopifyFilenames =
-          new Set(
-            shopifyImages
-              .map((image) => image.filename)
-              .filter(Boolean)
-          );
+const dimensionCounts = new Map();
 
-        const missingImages =
-          sourceImages.filter(
-            (image) =>
-              !shopifyFilenames.has(
-                image.filename
-              )
-          );
+for (const image of shopifyImages) {
+  const key =
+    `${image.width}x${image.height}`;
+
+  dimensionCounts.set(
+    key,
+    (dimensionCounts.get(key) || 0) + 1
+  );
+}
+
+const missingImages = [];
+
+for (const image of sourceImages) {
+  const key =
+    `${image.width}x${image.height}`;
+
+  const remaining =
+    dimensionCounts.get(key) || 0;
+
+  if (remaining > 0) {
+    dimensionCounts.set(
+      key,
+      remaining - 1
+    );
+  } else {
+    missingImages.push(image);
+  }
+}
 
         results.push({
           name:
