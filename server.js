@@ -2388,6 +2388,242 @@ for (const image of sourceImages) {
       );
   }
 });            
+app.get("/marine-diagnostic", async (req, res) => {
+  try {
+    const shop = String(
+      req.query.shop || ALLOWED_SHOP || ""
+    ).toLowerCase();
+
+    if (!validShop(shop) || !tokens.has(shop)) {
+      return res
+        .status(401)
+        .send("Authorize Shopify first");
+    }
+
+    const handle = "marine-set";
+
+    const godaddyUrl =
+      "https://b54aa1d3-662e-49ee-b390-0d4ebb6dcdbe.mysimplestore.com" +
+      "/api/v2/products/" +
+      encodeURIComponent(handle) +
+      "?app=vnext";
+
+    const sourceResponse = await fetch(godaddyUrl, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 CHB-Image-Migration/1.0",
+        "Accept": "application/json"
+      }
+    });
+
+    if (!sourceResponse.ok) {
+      throw new Error(
+        `GoDaddy product API failed: ${sourceResponse.status}`
+      );
+    }
+
+    const sourceProduct =
+      await sourceResponse.json();
+
+    const sourceImages =
+      (sourceProduct.assets || [])
+        .filter(
+          (asset) =>
+            asset &&
+            asset.type === "image"
+        )
+        .map((asset, index) => ({
+          position: index + 1,
+          width:
+            Number(asset.attachment_width || 0),
+          height:
+            Number(asset.attachment_height || 0),
+          originalUrl:
+            asset.original_url || "",
+          productUrl:
+            asset.product_url || "",
+          smallUrl:
+            asset.small_url || "",
+          largeUrl:
+            asset.large_url || "",
+          zoomUrl:
+            asset.zoom_image_url || ""
+        }));
+
+    const shopifyData = await gql(
+      shop,
+      `
+        query MarineDiagnostic($handle: String!) {
+          productByHandle(handle: $handle) {
+            id
+            title
+            handle
+            media(first: 20) {
+              nodes {
+                id
+                status
+                mediaContentType
+                ... on MediaImage {
+                  image {
+                    url
+                    altText
+                    width
+                    height
+                  }
+                }
+              }
+            }
+          }
+        }
+      `,
+      {
+        handle
+      }
+    );
+
+    const product =
+      shopifyData.productByHandle;
+
+    if (!product) {
+      throw new Error(
+        "Marine Set not found in Shopify"
+      );
+    }
+
+    const shopifyImages =
+      (product.media?.nodes || [])
+        .filter(
+          (media) =>
+            media.status !== "FAILED" &&
+            media.mediaContentType === "IMAGE" &&
+            media.image?.url
+        )
+        .map((media, index) => ({
+          position: index + 1,
+          url: media.image.url,
+          altText: media.image.altText || "",
+          width: Number(media.image.width || 0),
+          height: Number(media.image.height || 0)
+        }));
+
+    const sourceRows = sourceImages
+      .map(
+        (image) => `
+          <tr>
+            <td>${image.position}</td>
+            <td>${image.width} x ${image.height}</td>
+            <td>
+              <code>${escapeHtml(image.originalUrl)}</code>
+            </td>
+            <td>
+              <a href="${escapeHtml(image.productUrl)}" target="_blank">
+                Product URL
+              </a>
+            </td>
+            <td>
+              <a href="${escapeHtml(image.smallUrl)}" target="_blank">
+                Small URL
+              </a>
+            </td>
+          </tr>
+        `
+      )
+      .join("");
+
+    const shopifyRows = shopifyImages
+      .map(
+        (image) => `
+          <tr>
+            <td>${image.position}</td>
+            <td>${image.width} x ${image.height}</td>
+            <td>${escapeHtml(image.altText)}</td>
+            <td>
+              <a href="${escapeHtml(image.url)}" target="_blank">
+                Open Shopify image
+              </a>
+            </td>
+          </tr>
+        `
+      )
+      .join("");
+
+    return res.send(
+      page(
+        "Marine Set diagnostic",
+        `
+          <h1>Marine Set diagnostic</h1>
+
+          <div class="card">
+            <p>
+              <strong>Source images:</strong>
+              ${sourceImages.length}
+            </p>
+
+            <p>
+              <strong>Shopify images:</strong>
+              ${shopifyImages.length}
+            </p>
+
+            <p>
+              <strong>Nothing was changed.</strong>
+            </p>
+          </div>
+
+          <div class="card">
+            <h2>GoDaddy source images</h2>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Position</th>
+                  <th>Original dimensions</th>
+                  <th>Original URL</th>
+                  <th>Product URL</th>
+                  <th>Small URL</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${sourceRows}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <h2>Current Shopify images</h2>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Position</th>
+                  <th>Dimensions</th>
+                  <th>Alt text</th>
+                  <th>Shopify URL</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${shopifyRows}
+              </tbody>
+            </table>
+          </div>
+        `
+      )
+    );
+  } catch (e) {
+    return res
+      .status(500)
+      .send(
+        page(
+          "Marine diagnostic failed",
+          `
+            <h1>Marine diagnostic failed</h1>
+            <div class="card">
+              <pre>${escapeHtml(String(e))}</pre>
+            </div>
+          `
+        )
+      );
+  }
+});
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`CHB Image Migration listening on port ${PORT}`);
 });
