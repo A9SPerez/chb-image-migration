@@ -2428,10 +2428,11 @@ app.get("/marine-diagnostic", async (req, res) => {
   "skyfall-set",
   "rosa-neon-delta-set",
   "pre-order-divine-grace-hand-chain",
-  "casa-lunar-set",
-  "lover-berry-set",
-  "bloom-set"
-]);
+ "casa-lunar-set",
+"lover-berry-set",
+"bloom-set",
+"preto-bronzeada-one-piece"
+]); 
 
 const handle = String(
   req.query.handle || "marine-set"
