@@ -3664,7 +3664,7 @@ app.get("/validate-editorial-assets", async (_req, res) => {
 
       try {
         const response = await fetch(asset.url, {
-          method: "HEAD",
+          method: "GET",
           redirect: "follow",
           headers: {
             "User-Agent":
