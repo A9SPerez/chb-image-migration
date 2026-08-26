@@ -4079,6 +4079,61 @@ app.get("/upload-editorial-assets", async (req, res) => {
       );
   }
 });
+app.get("/check-scopes", async (req, res) => {
+  try {
+    const shop = String(
+      req.query.shop || ALLOWED_SHOP || ""
+    ).toLowerCase();
+
+    const token = tokens.get(shop);
+
+    if (!token) {
+      return res
+        .status(401)
+        .send("Authorize Shopify first");
+    }
+
+    const response = await fetch(
+      `https://${shop}/admin/oauth/access_scopes.json`,
+      {
+        headers: {
+          "X-Shopify-Access-Token": token,
+          "Accept": "application/json"
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    return res.send(
+      page(
+        "Granted Shopify scopes",
+        `
+          <h1>Granted Shopify scopes</h1>
+          <div class="card">
+            <pre>${escapeHtml(
+              JSON.stringify(data, null, 2)
+            )}</pre>
+          </div>
+        `
+      )
+    );
+  } catch (e) {
+    return res
+      .status(500)
+      .send(
+        page(
+          "Scope check failed",
+          `
+            <h1>Scope check failed</h1>
+            <div class="card">
+              <pre>${escapeHtml(String(e))}</pre>
+            </div>
+          `
+        )
+      );
+  }
+});
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`CHB Image Migration listening on port ${PORT}`);
 });
